@@ -1,7 +1,6 @@
 # Cloud Services Comparison: AWS vs GCP vs Azure
 
 > Quick reference to find equivalent services across cloud providers.
-> Last Updated: 2025-01
 
 ---
 
