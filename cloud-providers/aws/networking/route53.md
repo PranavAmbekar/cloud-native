@@ -47,18 +47,18 @@
 - Associate with one or more VPCs
 
 ```
-┌─────────────────────────────────────────┐
-│              Private Zone               │
-│           internal.company.com          │
-│                    │                    │
-│    ┌───────────────┼───────────────┐    │
-│    │               │               │    │
-│    ▼               ▼               ▼    │
-│  VPC-A          VPC-B           VPC-C   │
-│                                         │
-│   db.internal.company.com → 10.0.1.5   │
-│   api.internal.company.com → 10.0.2.10 │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|              Private Zone               |
+|           internal.company.com          |
+|                    |                    |
+|    +---------------+---------------+    |
+|    |               |               |    |
+|    v               v               v    |
+|  VPC-A          VPC-B           VPC-C   |
+|                                         |
+|   db.internal.company.com -> 10.0.1.5   |
+|   api.internal.company.com -> 10.0.2.10 |
++-----------------------------------------+
 ```
 
 ---
@@ -101,11 +101,11 @@ example.com → ALIAS → xxx.cloudfront.net  ✓
 ### Simple Routing
 ```
 query: www.example.com
-       │
-       ▼
-   ┌───────┐
-   │   A   │ → 1.2.3.4, 5.6.7.8
-   └───────┘
+       |
+       v
+   +-------+
+   |   A   | -> 1.2.3.4, 5.6.7.8
+   +-------+
    (random selection by client)
 ```
 - One record, multiple values
@@ -115,10 +115,10 @@ query: www.example.com
 ### Weighted Routing
 ```
 query: www.example.com
-       │
-       ├── 70% → 1.2.3.4 (weight: 70)
-       ├── 20% → 5.6.7.8 (weight: 20)
-       └── 10% → 9.10.11.12 (weight: 10)
+       |
+       +-- 70% -> 1.2.3.4 (weight: 70)
+       +-- 20% -> 5.6.7.8 (weight: 20)
+       +-- 10% -> 9.10.11.12 (weight: 10)
 ```
 - Distribute traffic by percentage
 - A/B testing, gradual migration
@@ -127,10 +127,10 @@ query: www.example.com
 ### Latency Routing
 ```
 query: www.example.com
-       │
-       ├── User in Tokyo → ap-northeast-1 endpoint
-       ├── User in London → eu-west-1 endpoint
-       └── User in NYC → us-east-1 endpoint
+       |
+       +-- User in Tokyo -> ap-northeast-1 endpoint
+       +-- User in London -> eu-west-1 endpoint
+       +-- User in NYC -> us-east-1 endpoint
 ```
 - Route to lowest latency region
 - Based on AWS latency measurements
@@ -139,11 +139,11 @@ query: www.example.com
 ### Failover Routing
 ```
 query: www.example.com
-       │
-       ├── Primary (us-east-1) ← Health Check
-       │        │
-       │        ▼ (if unhealthy)
-       └── Secondary (us-west-2)
+       |
+       +-- Primary (us-east-1) <- Health Check
+       |        |
+       |        v (if unhealthy)
+       +-- Secondary (us-west-2)
 ```
 - Active-passive setup
 - Primary must have health check
@@ -152,11 +152,11 @@ query: www.example.com
 ### Geolocation Routing
 ```
 query: www.example.com
-       │
-       ├── User in US → us-endpoint
-       ├── User in Europe → eu-endpoint
-       ├── User in Asia → asia-endpoint
-       └── Default → default-endpoint
+       |
+       +-- User in US -> us-endpoint
+       +-- User in Europe -> eu-endpoint
+       +-- User in Asia -> asia-endpoint
+       +-- Default -> default-endpoint
 ```
 - Route based on user location
 - Continent, country, or US state
@@ -165,17 +165,17 @@ query: www.example.com
 
 ### Geoproximity Routing
 ```
-                  ┌─────────────────┐
-                  │   Traffic Flow  │
-                  └─────────────────┘
-                         │
-    ┌────────────────────┼────────────────────┐
-    │                    │                    │
-    ▼                    ▼                    ▼
+                  +-----------------+
+                  |   Traffic Flow  |
+                  +-----------------+
+                         |
+    +--------------------+--------------------+
+    |                    |                    |
+    v                    v                    v
  Region A            Region B            Region C
  (bias: +50)         (bias: 0)          (bias: -25)
-    │                    │                    │
-    └──── Expanded ──────┴──── Shrunk ────────┘
+    |                    |                    |
+    +---- Expanded ------+---- Shrunk --------+
            coverage              coverage
 ```
 - Route based on geographic distance
@@ -185,8 +185,8 @@ query: www.example.com
 ### Multi-Value Answer
 ```
 query: www.example.com
-       │
-       ▼
+       |
+       v
    Returns up to 8 healthy records
    [1.2.3.4, 5.6.7.8, 9.10.11.12]
    (client-side load balancing)
@@ -198,9 +198,9 @@ query: www.example.com
 ### IP-Based Routing
 ```
 query: www.example.com
-       │
-       ├── Client IP in 203.0.113.0/24 → endpoint-1
-       └── Client IP in 198.51.100.0/24 → endpoint-2
+       |
+       +-- Client IP in 203.0.113.0/24 -> endpoint-1
+       +-- Client IP in 198.51.100.0/24 -> endpoint-2
 ```
 - Route based on client IP (CIDR)
 - ISP-specific routing
@@ -220,12 +220,12 @@ query: www.example.com
 ### Endpoint Health Check
 ```
 Route 53 Health Checkers (global)
-           │
-           ▼
-    ┌─────────────┐
-    │  Endpoint   │
-    │ /health-check │
-    └─────────────┘
+           |
+           v
+    +-------------+
+    |  Endpoint   |
+    | /health-check |
+    +-------------+
 
 Settings:
 - Protocol: HTTP/HTTPS/TCP
@@ -237,16 +237,16 @@ Settings:
 
 ### Calculated Health Check
 ```
-┌─────────────────────────────────────┐
-│    Calculated Health Check          │
-│                                     │
-│   HC-1 ✓  AND  HC-2 ✓  AND  HC-3 ✗  │
-│                 │                   │
-│                 ▼                   │
-│   Status: Unhealthy (1 of 3 failed) │
-│   OR                                │
-│   Status: Healthy (2 of 3 passed)   │
-└─────────────────────────────────────┘
++-------------------------------------+
+|    Calculated Health Check          |
+|                                     |
+|   HC-1 Y  AND  HC-2 Y  AND  HC-3 X  |
+|                 |                   |
+|                 v                   |
+|   Status: Unhealthy (1 of 3 failed) |
+|   OR                                |
+|   Status: Healthy (2 of 3 passed)   |
++-------------------------------------+
 ```
 - Combine multiple health checks
 - AND, OR, or threshold logic
@@ -257,7 +257,7 @@ Settings:
 
 Solution:
 ```
-Private Resource → CloudWatch Metric → CloudWatch Alarm → Route 53 Health Check
+Private Resource -> CloudWatch Metric -> CloudWatch Alarm -> Route 53 Health Check
 ```
 
 ---
@@ -289,16 +289,16 @@ aws route53domains register-domain \
 Visual policy editor for complex routing.
 
 ```
-┌─────────────────────────────────────────────────┐
-│              Traffic Flow Policy                │
-│                                                 │
-│   Start → Geolocation → Weighted → Endpoint    │
-│              │             │                    │
-│              │             ├── 70% → us-east-1 │
-│              │             └── 30% → us-west-2 │
-│              │                                  │
-│              └── EU → eu-west-1                │
-└─────────────────────────────────────────────────┘
++-------------------------------------------------+
+|              Traffic Flow Policy                |
+|                                                 |
+|   Start -> Geolocation -> Weighted -> Endpoint  |
+|              |             |                    |
+|              |             +-- 70% -> us-east-1 |
+|              |             +-- 30% -> us-west-2 |
+|              |                                  |
+|              +-- EU -> eu-west-1                |
++-------------------------------------------------+
 ```
 
 - $50/month per policy record

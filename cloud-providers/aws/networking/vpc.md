@@ -22,40 +22,40 @@ VPC lets you define a logically isolated network in AWS. You control IP ranges, 
 ## VPC Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ VPC: 10.0.0.0/16                                                │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ Public Subnet: 10.0.1.0/24 (AZ-a)                        │  │
-│  │  ┌─────────┐                                             │  │
-│  │  │   EC2   │ ←── Security Group                          │  │
-│  │  │ Public  │     (stateful)                              │  │
-│  │  │   IP    │                                             │  │
-│  │  └─────────┘                                             │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│       │                                                         │
-│       │ Route: 0.0.0.0/0 → Internet Gateway                    │
-│       ▼                                                         │
-│  ┌─────────┐                                                   │
-│  │   IGW   │ ←─────────── Internet                             │
-│  └─────────┘                                                   │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ Private Subnet: 10.0.2.0/24 (AZ-a)                       │  │
-│  │  ┌─────────┐                                             │  │
-│  │  │   EC2   │ (no public IP)                              │  │
-│  │  │ Private │                                             │  │
-│  │  └─────────┘                                             │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│       │                                                         │
-│       │ Route: 0.0.0.0/0 → NAT Gateway                         │
-│       ▼                                                         │
-│  ┌─────────┐                                                   │
-│  │   NAT   │ (in public subnet)                                │
-│  │ Gateway │                                                   │
-│  └─────────┘                                                   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+| VPC: 10.0.0.0/16                                                 |
+|                                                                  |
+|  +---------------------------------------------------------+    |
+|  | Public Subnet: 10.0.1.0/24 (AZ-a)                        |    |
+|  |  +-----------+                                           |    |
+|  |  |    EC2    | <-- Security Group                        |    |
+|  |  |  Public   |     (stateful)                            |    |
+|  |  |    IP     |                                           |    |
+|  |  +-----------+                                           |    |
+|  +---------------------------------------------------------+    |
+|       |                                                          |
+|       | Route: 0.0.0.0/0 -> Internet Gateway                     |
+|       v                                                          |
+|  +-----------+                                                   |
+|  |    IGW    | <----------- Internet                             |
+|  +-----------+                                                   |
+|                                                                  |
+|  +---------------------------------------------------------+    |
+|  | Private Subnet: 10.0.2.0/24 (AZ-a)                       |    |
+|  |  +-----------+                                           |    |
+|  |  |    EC2    | (no public IP)                            |    |
+|  |  |  Private  |                                           |    |
+|  |  +-----------+                                           |    |
+|  +---------------------------------------------------------+    |
+|       |                                                          |
+|       | Route: 0.0.0.0/0 -> NAT Gateway                          |
+|       v                                                          |
+|  +-----------+                                                   |
+|  |    NAT    | (in public subnet)                                |
+|  |  Gateway  |                                                   |
+|  +-----------+                                                   |
+|                                                                  |
++------------------------------------------------------------------+
 ```
 
 ## CIDR Notation
@@ -81,7 +81,7 @@ VPC lets you define a logically isolated network in AWS. You control IP ranges, 
 - One IGW per VPC
 - Horizontally scaled, redundant, highly available
 - Provides NAT for instances with public IPs
-- Must update route table: `0.0.0.0/0 → igw-xxxxx`
+- Must update route table: `0.0.0.0/0 -> igw-xxxxx`
 
 ## NAT Gateway vs NAT Instance
 
@@ -152,15 +152,15 @@ Outbound:
 ## VPC Peering
 
 - Connect two VPCs (same or different accounts/regions)
-- Not transitive: A↔B and B↔C does NOT mean A↔C
+- Not transitive: A<->B and B<->C does NOT mean A<->C
 - No overlapping CIDR blocks
 - Must update route tables in BOTH VPCs
 
 ```
-VPC-A (10.0.0.0/16) ←──PCX──→ VPC-B (172.16.0.0/16)
+VPC-A (10.0.0.0/16) <--PCX--> VPC-B (172.16.0.0/16)
 
 VPC-A Route Table:         VPC-B Route Table:
-172.16.0.0/16 → pcx-xxx    10.0.0.0/16 → pcx-xxx
+172.16.0.0/16 -> pcx-xxx    10.0.0.0/16 -> pcx-xxx
 ```
 
 ## Transit Gateway
@@ -171,19 +171,19 @@ VPC-A Route Table:         VPC-B Route Table:
 - Supports thousands of VPCs
 
 ```
-       ┌─────┐
-       │VPC-A│
-       └──┬──┘
-          │
-    ┌─────┴─────┐
-    │  Transit  │
-    │  Gateway  │
-    └─────┬─────┘
-     ╱    │    ╲
-┌───┐ ┌───┐ ┌───┐
-│VPC│ │VPC│ │VPN│
-│ B │ │ C │ │   │
-└───┘ └───┘ └───┘
+       +-------+
+       | VPC-A |
+       +---+---+
+           |
+    +------+------+
+    |   Transit   |
+    |   Gateway   |
+    +------+------+
+      /    |    \
++-----+ +-----+ +-----+
+| VPC | | VPC | | VPN |
+|  B  | |  C  | |     |
++-----+ +-----+ +-----+
 ```
 
 ## VPC Endpoints
@@ -200,8 +200,8 @@ VPC-A Route Table:         VPC-B Route Table:
 - Can access across regions (with additional setup)
 
 ```
-Private Subnet → ENI (Interface Endpoint) → AWS Service
-                     (private IP)
+Private Subnet -> ENI (Interface Endpoint) -> AWS Service
+                       (private IP)
 ```
 
 ## VPN & Direct Connect

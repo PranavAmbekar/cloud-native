@@ -20,19 +20,19 @@
 ## Architecture
 
 ```
-                    ┌─────────────────┐
-                    │    SNS Topic    │
-                    └────────┬────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         │                   │                   │
-         ▼                   ▼                   ▼
-    ┌─────────┐        ┌─────────┐        ┌─────────┐
-    │   SQS   │        │ Lambda  │        │  HTTP   │
-    │  Queue  │        │         │        │Endpoint │
-    └─────────┘        └─────────┘        └─────────┘
-         │                   │                   │
-         ▼                   ▼                   ▼
+                    +-----------------+
+                    |    SNS Topic    |
+                    +--------+--------+
+                             |
+         +-------------------+-------------------+
+         |                   |                   |
+         v                   v                   v
+    +---------+        +---------+        +---------+
+    |   SQS   |        | Lambda  |        |  HTTP   |
+    |  Queue  |        |         |        |Endpoint |
+    +---------+        +---------+        +---------+
+         |                   |                   |
+         v                   v                   v
     [Consumer]          [Process]          [Webhook]
 ```
 
@@ -78,15 +78,15 @@
 
 ```
 Publisher                SNS Topic              Subscribers
-    │                        │                       │
-    │   1. Publish           │                       │
-    │──────────────────────▶ │                       │
-    │                        │   2. Fan-out          │
-    │                        │──────────────────────▶│ SQS
-    │                        │──────────────────────▶│ Lambda
-    │                        │──────────────────────▶│ HTTP
-    │                        │──────────────────────▶│ Email
-    │                        │                       │
+    |                        |                       |
+    |   1. Publish           |                       |
+    |----------------------> |                       |
+    |                        |   2. Fan-out          |
+    |                        |---------------------->| SQS
+    |                        |---------------------->| Lambda
+    |                        |---------------------->| HTTP
+    |                        |---------------------->| Email
+    |                        |                       |
 ```
 
 ---
@@ -128,17 +128,17 @@ Subscribers receive only messages they want.
 
 ### SNS + SQS
 ```
-             ┌─────────────────┐
-             │    SNS Topic    │
-             └────────┬────────┘
-                      │
-      ┌───────────────┼───────────────┐
-      │               │               │
-      ▼               ▼               ▼
- ┌─────────┐    ┌─────────┐    ┌─────────┐
- │  SQS 1  │    │  SQS 2  │    │  SQS 3  │
- │ Orders  │    │Analytics│    │  Audit  │
- └─────────┘    └─────────┘    └─────────┘
+             +-----------------+
+             |    SNS Topic    |
+             +--------+--------+
+                      |
+      +---------------+---------------+
+      |               |               |
+      v               v               v
+ +---------+    +---------+    +---------+
+ |  SQS 1  |    |  SQS 2  |    |  SQS 3  |
+ | Orders  |    |Analytics|    |  Audit  |
+ +---------+    +---------+    +---------+
 ```
 
 Benefits:
@@ -149,7 +149,7 @@ Benefits:
 
 ### SNS + Kinesis Firehose
 ```
-SNS Topic → Kinesis Firehose → S3 / Redshift / OpenSearch
+SNS Topic -> Kinesis Firehose -> S3 / Redshift / OpenSearch
 ```
 
 For analytics and archival.
@@ -258,22 +258,22 @@ Enable per subscription for cleaner payloads.
 ## Mobile Push Notifications
 
 ```
-                  ┌─────────┐
-                  │   SNS   │
-                  │Platform │
-                  │  App    │
-                  └────┬────┘
-                       │
-       ┌───────────────┼───────────────┐
-       │               │               │
-       ▼               ▼               ▼
-   ┌───────┐      ┌───────┐      ┌───────┐
-   │  APNs │      │  FCM  │      │  ADM  │
-   │(Apple)│      │(Google│      │(Amazon│
-   │       │      │       │      │       │
-   └───────┘      └───────┘      └───────┘
-       │               │               │
-       ▼               ▼               ▼
+                  +---------+
+                  |   SNS   |
+                  |Platform |
+                  |  App    |
+                  +----+----+
+                       |
+       +---------------+---------------+
+       |               |               |
+       v               v               v
+   +-------+      +-------+      +-------+
+   |  APNs |      |  FCM  |      |  ADM  |
+   |(Apple)|      |(Google|      |(Amazon|
+   |       |      |       |      |       |
+   +-------+      +-------+      +-------+
+       |               |               |
+       v               v               v
     iPhone          Android        Kindle
 ```
 
@@ -416,17 +416,17 @@ aws sns delete-topic --topic-arn arn:aws:sns:us-east-1:123456789:my-topic
 
 ### Event Notification
 ```
-S3 Event → SNS → Lambda, SQS, Email
+S3 Event -> SNS -> Lambda, SQS, Email
 ```
 
 ### Application Integration
 ```
-App A → SNS → App B, App C, App D
+App A -> SNS -> App B, App C, App D
 ```
 
 ### Alert System
 ```
-CloudWatch Alarm → SNS → Email, SMS, Slack (via Lambda)
+CloudWatch Alarm -> SNS -> Email, SMS, Slack (via Lambda)
 ```
 
 ---

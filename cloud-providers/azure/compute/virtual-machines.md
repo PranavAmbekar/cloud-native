@@ -34,11 +34,11 @@ Azure Virtual Machines (VMs) provide Infrastructure-as-a-Service (IaaS) computin
 
 ```
 Standard_D4s_v5
-│        │ │ │
-│        │ │ └─ Version (higher = newer)
-│        │ └─── "s" = Premium SSD capable
-│        └───── Size (2, 4, 8, 16, etc. vCPUs)
-└────────────── Family (D = general purpose)
+|        | | |
+|        | | +- Version (higher = newer)
+|        | +--- "s" = Premium SSD capable
+|        +----- Size (2, 4, 8, 16, etc. vCPUs)
++-------------- Family (D = general purpose)
 ```
 
 ## Pricing Models
@@ -72,19 +72,19 @@ Standard_D4s_v5
 ### Availability Set
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Availability Set                      │
-│  ┌─────────────────┐    ┌─────────────────┐             │
-│  │ Fault Domain 0  │    │ Fault Domain 1  │    FD 2    │
-│  │   ┌─────┐       │    │   ┌─────┐       │  ┌─────┐   │
-│  │   │ VM1 │       │    │   │ VM2 │       │  │ VM3 │   │
-│  │   └─────┘       │    │   └─────┘       │  └─────┘   │
-│  │ (Rack/Power)    │    │ (Rack/Power)    │            │
-│  └─────────────────┘    └─────────────────┘            │
-│                                                          │
-│  Update Domains: 0, 1, 2, 3, 4 (max 20)                │
-│  (Only one UD updated at a time)                        │
-└─────────────────────────────────────────────────────────┘
++---------------------------------------------------------+
+|                    Availability Set                     |
+|  +-----------------+    +-----------------+             |
+|  | Fault Domain 0  |    | Fault Domain 1  |    FD 2    |
+|  |   +-----+       |    |   +-----+       |  +-----+   |
+|  |   | VM1 |       |    |   | VM2 |       |  | VM3 |   |
+|  |   +-----+       |    |   +-----+       |  +-----+   |
+|  | (Rack/Power)    |    | (Rack/Power)    |            |
+|  +-----------------+    +-----------------+            |
+|                                                         |
+|  Update Domains: 0, 1, 2, 3, 4 (max 20)                |
+|  (Only one UD updated at a time)                        |
++---------------------------------------------------------+
 ```
 
 ## Disk Types
@@ -116,18 +116,18 @@ Standard_D4s_v5
 ## Virtual Machine Scale Sets (VMSS)
 
 ```
-┌─────────────────────────────────────────────────────┐
-│            Virtual Machine Scale Set                 │
-│   ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐     │
-│   │ VM0 │  │ VM1 │  │ VM2 │  │ VM3 │  │ VM4 │     │
-│   └─────┘  └─────┘  └─────┘  └─────┘  └─────┘     │
-│      Min: 2      Current: 5       Max: 100         │
-└─────────────────────────────────────────────────────┘
-        │
-        ▼
++-----------------------------------------------------+
+|            Virtual Machine Scale Set                 |
+|   +-----+  +-----+  +-----+  +-----+  +-----+     |
+|   | VM0 |  | VM1 |  | VM2 |  | VM3 |  | VM4 |     |
+|   +-----+  +-----+  +-----+  +-----+  +-----+     |
+|      Min: 2      Current: 5       Max: 100         |
++-----------------------------------------------------+
+        |
+        v
   Scaling Rules
-  - CPU > 70% → Scale out
-  - CPU < 30% → Scale in
+  - CPU > 70% -> Scale out
+  - CPU < 30% -> Scale in
   - Schedule: 9am scale to 10
 ```
 

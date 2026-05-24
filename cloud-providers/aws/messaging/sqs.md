@@ -22,7 +22,7 @@
 
 ### Standard Queue
 ```
-Producer ──▶ [msg3][msg1][msg2] ──▶ Consumer
+Producer --> [msg3][msg1][msg2] --> Consumer
              (best-effort ordering)
 ```
 
@@ -35,7 +35,7 @@ Producer ──▶ [msg3][msg1][msg2] ──▶ Consumer
 
 ### FIFO Queue
 ```
-Producer ──▶ [msg1][msg2][msg3] ──▶ Consumer
+Producer --> [msg1][msg2][msg3] --> Consumer
              (exactly ordered)
 ```
 
@@ -52,20 +52,20 @@ Producer ──▶ [msg1][msg2][msg3] ──▶ Consumer
 ## Message Lifecycle
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│  1. SEND         2. RECEIVE       3. PROCESS      4. DELETE│
-│                                                             │
-│  Producer ──▶ Queue ──▶ Consumer ──▶ Process ──▶ Delete    │
-│                  │                      │                   │
-│                  │    Visibility        │                   │
-│                  │◄───Timeout───────────┘                   │
-│                  │    (hidden)                              │
-│                  │                                          │
-│                  ▼                                          │
-│            If not deleted, message returns to queue         │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                                                             |
+|  1. SEND         2. RECEIVE       3. PROCESS      4. DELETE|
+|                                                             |
+|  Producer --> Queue --> Consumer --> Process --> Delete    |
+|                  |                      |                   |
+|                  |    Visibility        |                   |
+|                  |<---Timeout-----------+                   |
+|                  |    (hidden)                              |
+|                  |                                          |
+|                  v                                          |
+|            If not deleted, message returns to queue         |
+|                                                             |
++-------------------------------------------------------------+
 ```
 
 ---
@@ -78,11 +78,11 @@ Time message is invisible after being received.
 Message received at T=0
 Visibility Timeout = 30 seconds
 
-T=0  ──────────── T=30 ──────────── T=60
-│                   │                 │
-│   Message         │   Message       │
-│   INVISIBLE       │   VISIBLE       │
-│   (processing)    │   (reappears)   │
+T=0  ------------ T=30 ------------ T=60
+|                   |                 |
+|   Message         |   Message       |
+|   INVISIBLE       |   VISIBLE       |
+|   (processing)    |   (reappears)   |
 ```
 
 - Default: 30 seconds
@@ -130,14 +130,14 @@ Queue for messages that fail processing.
 
 ```
 Main Queue                 Dead Letter Queue
-┌─────────────┐           ┌─────────────┐
-│  [message]  │──fail──▶  │  [message]  │
-│             │  (after   │             │
-│             │  N tries) │             │
-└─────────────┘           └─────────────┘
++-------------+           +-------------+
+|  [message]  |--fail-->  |  [message]  |
+|             |  (after   |             |
+|             |  N tries) |             |
++-------------+           +-------------+
 
 maxReceiveCount = 3
-→ After 3 failed receives, move to DLQ
+-> After 3 failed receives, move to DLQ
 ```
 
 ### Redrive Policy
@@ -184,8 +184,8 @@ sqs.send_message(
 
 ### Message Group ID
 ```
-Group A: [msg1] [msg3] [msg5]  → Ordered within group
-Group B: [msg2] [msg4] [msg6]  → Ordered within group
+Group A: [msg1] [msg3] [msg5]  -> Ordered within group
+Group B: [msg2] [msg4] [msg6]  -> Ordered within group
 ```
 
 Messages in same group processed in order.
@@ -217,11 +217,11 @@ Delay message delivery.
 Message sent at T=0
 Delay = 60 seconds
 
-T=0 ──────────── T=60 ──────────── T=120
-│                 │                  │
-│   Message       │   Message        │
-│   DELAYED       │   AVAILABLE      │
-│   (invisible)   │   (can receive)  │
+T=0 ------------ T=60 ------------ T=120
+|                 |                  |
+|   Message       |   Message        |
+|   DELAYED       |   AVAILABLE      |
+|   (invisible)   |   (can receive)  |
 ```
 
 - Queue-level: 0-15 minutes default delay
@@ -242,17 +242,17 @@ sqs.send_message(
 Messages > 256 KB using S3.
 
 ```
-┌──────────┐      ┌─────┐      ┌─────────┐
-│ Producer │─────▶│ S3  │      │   SQS   │
-│          │      │     │      │         │
-│ (large   │      │ ┌───┴───┐  │ [ptr]   │
-│  payload)│      │ │payload│  │         │
-└──────────┘      │ └───────┘  └────┬────┘
-                  │      ▲          │
-                  │      │          │
-                  │      └──────────┘
-                  │        pointer
-                  └─────────────────────────▶ Consumer
++----------+      +-----+      +---------+
+| Producer |----->| S3  |      |   SQS   |
+|          |      |     |      |         |
+| (large   |      | +-------+  | [ptr]   |
+|  payload)|      | |payload|  |         |
++----------+      | +-------+  +----+----+
+                  |      ^          |
+                  |      |          |
+                  |      +----------+
+                  |        pointer
+                  +-------------------------> Consumer
 ```
 
 Use **Amazon SQS Extended Client Library**.
@@ -315,10 +315,10 @@ aws sqs set-queue-attributes \
 ## Integration with Lambda
 
 ```
-┌─────────┐    Event Source    ┌─────────┐
-│   SQS   │───────Mapping─────▶│ Lambda  │
-│  Queue  │                    │         │
-└─────────┘                    └─────────┘
++---------+    Event Source    +---------+
+|   SQS   |-------Mapping----->| Lambda  |
+|  Queue  |                    |         |
++---------+                    +---------+
 ```
 
 - Lambda polls SQS

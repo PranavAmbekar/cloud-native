@@ -21,21 +21,21 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│   User ──▶ Edge Location ──▶ Regional Edge ──▶ Origin          │
-│            (closest)         Cache              (S3/ALB)        │
-│                 │                                   │           │
-│                 │         Cache HIT                 │           │
-│                 └────────────────────────────────▶ Response     │
-│                                                                 │
-│                              Cache MISS                         │
-│                 └─────────────────────────────────▶│            │
-│                                                    │            │
-│                 ◀──────────────────────────────────┘            │
-│                        Fetch from origin                        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                                                                 |
+|   User --> Edge Location --> Regional Edge --> Origin           |
+|            (closest)         Cache              (S3/ALB)        |
+|                 |                                   |           |
+|                 |         Cache HIT                 |           |
+|                 +--------------------------------> Response     |
+|                                                                 |
+|                              Cache MISS                         |
+|                 +------------------------------------>|         |
+|                                                       |         |
+|                 <-------------------------------------+         |
+|                        Fetch from origin                        |
+|                                                                 |
++-----------------------------------------------------------------+
 
 Edge Locations: 400+ worldwide
 Regional Edge Caches: 13 locations
@@ -47,22 +47,22 @@ Regional Edge Caches: 13 locations
 
 ### S3 Bucket
 ```
-CloudFront ──▶ S3 Bucket
-                  │
+CloudFront --> S3 Bucket
+                  |
            Origin Access Control (OAC)
            (restricts S3 access to CloudFront only)
 ```
 
 ### Custom Origin (HTTP)
 ```
-CloudFront ──▶ ALB / EC2 / Any HTTP server
-                  │
+CloudFront --> ALB / EC2 / Any HTTP server
+                  |
            Custom headers for verification
 ```
 
 ### Origin Groups (Failover)
 ```
-Primary Origin ────▶ If fails ────▶ Secondary Origin
+Primary Origin ----> If fails ----> Secondary Origin
    (us-east-1)                        (us-west-2)
 ```
 
@@ -100,21 +100,21 @@ URL pattern matching with different settings.
 
 ```
 Distribution: d123.cloudfront.net
-│
-├── Behavior: /api/*
-│   ├── Origin: ALB
-│   ├── Cache: Disabled
-│   └── Viewer Protocol: HTTPS only
-│
-├── Behavior: /images/*
-│   ├── Origin: S3
-│   ├── Cache: 86400 seconds
-│   └── Compress: Yes
-│
-└── Behavior: Default (*)
-    ├── Origin: S3
-    ├── Cache: 3600 seconds
-    └── Viewer Protocol: Redirect to HTTPS
+|
++-- Behavior: /api/*
+|   +-- Origin: ALB
+|   +-- Cache: Disabled
+|   +-- Viewer Protocol: HTTPS only
+|
++-- Behavior: /images/*
+|   +-- Origin: S3
+|   +-- Cache: 86400 seconds
+|   +-- Compress: Yes
+|
++-- Behavior: Default (*)
+    +-- Origin: S3
+    +-- Cache: 3600 seconds
+    +-- Viewer Protocol: Redirect to HTTPS
 ```
 
 ---
@@ -140,11 +140,11 @@ What makes objects unique in cache:
 
 ```
 Cache Policy: Managed-CachingOptimized
-├── TTL: Min=1, Max=31536000, Default=86400
-├── Query strings: None
-├── Headers: None
-├── Cookies: None
-└── Compression: Gzip, Brotli
++-- TTL: Min=1, Max=31536000, Default=86400
++-- Query strings: None
++-- Headers: None
++-- Cookies: None
++-- Compression: Gzip, Brotli
 ```
 
 ### Origin Request Policies
@@ -189,7 +189,7 @@ Alternative: Use versioned file names (`logo-v2.png`)
 
 ### HTTPS
 ```
-Viewer ──HTTPS──▶ CloudFront ──HTTP/HTTPS──▶ Origin
+Viewer --HTTPS--> CloudFront --HTTP/HTTPS--> Origin
 ```
 
 Options:
@@ -209,12 +209,12 @@ Restrict access to content.
 
 ```
 Signed URL: For individual files
-┌──────────────────────────────────────────────────────────────┐
-│ https://d123.cloudfront.net/premium/video.mp4               │
-│   ?Expires=1609459200                                        │
-│   &Signature=xxxxx                                           │
-│   &Key-Pair-Id=APKAXXXXX                                    │
-└──────────────────────────────────────────────────────────────┘
++--------------------------------------------------------------+
+| https://d123.cloudfront.net/premium/video.mp4                |
+|   ?Expires=1609459200                                        |
+|   &Signature=xxxxx                                           |
+|   &Key-Pair-Id=APKAXXXXX                                     |
++--------------------------------------------------------------+
 
 Signed Cookies: For multiple files (e.g., all videos)
 ```
@@ -235,19 +235,19 @@ Signed Cookies: For multiple files (e.g., all videos)
 Run code at edge locations.
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                                                              │
-│   Viewer Request ──▶ CloudFront ──▶ Origin Request          │
-│        │                                    │                │
-│        ▼                                    ▼                │
-│   Lambda@Edge                          Lambda@Edge           │
-│                                                              │
-│   Origin Response ◀── CloudFront ◀── Viewer Response        │
-│        │                                    │                │
-│        ▼                                    ▼                │
-│   Lambda@Edge                          Lambda@Edge           │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
++--------------------------------------------------------------+
+|                                                              |
+|   Viewer Request --> CloudFront --> Origin Request           |
+|        |                                    |                |
+|        v                                    v                |
+|   Lambda@Edge                          Lambda@Edge           |
+|                                                              |
+|   Origin Response <-- CloudFront <-- Viewer Response         |
+|        |                                    |                |
+|        v                                    v                |
+|   Lambda@Edge                          Lambda@Edge           |
+|                                                              |
++--------------------------------------------------------------+
 ```
 
 ### Trigger Points
@@ -294,7 +294,7 @@ Use CloudFront Functions for:
 Stream logs to Kinesis Data Streams.
 
 ```
-CloudFront ──▶ Kinesis Data Streams ──▶ Kinesis Firehose ──▶ S3/OpenSearch
+CloudFront --> Kinesis Data Streams --> Kinesis Firehose --> S3/OpenSearch
 ```
 
 Fields available:
@@ -365,21 +365,21 @@ Price varies by region (price classes).
 
 ### Static Website
 ```
-S3 (static files) ◀── OAC ◀── CloudFront ◀── Route 53
+S3 (static files) <-- OAC <-- CloudFront <-- Route 53
 ```
 
 ### Dynamic + Static
 ```
-                    ┌── /api/* ──▶ ALB (dynamic)
-Route 53 ──▶ CloudFront ──┤
-                    └── /* ──▶ S3 (static)
+                    +-- /api/* --> ALB (dynamic)
+Route 53 --> CloudFront --+
+                    +-- /* --> S3 (static)
 ```
 
 ### Multi-Origin Failover
 ```
-CloudFront ──▶ Origin Group
-                  ├── Primary: S3 (us-east-1)
-                  └── Secondary: S3 (us-west-2)
+CloudFront --> Origin Group
+                  +-- Primary: S3 (us-east-1)
+                  +-- Secondary: S3 (us-west-2)
 ```
 
 ---

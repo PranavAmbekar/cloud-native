@@ -40,24 +40,24 @@ Azure Load Balancer distributes inbound traffic across backend resources. It ope
 
 ```
                     Internet
-                        │
-                        ▼
-              ┌─────────────────┐
-              │ Public Frontend │
-              │   IP: 1.2.3.4   │
-              └────────┬────────┘
-                       │
-              ┌────────▼────────┐
-              │  Load Balancer  │
-              │   (Standard)    │
-              └────────┬────────┘
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-   ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
-   │   VM1   │    │   VM2   │    │   VM3   │
-   │10.0.0.4 │    │10.0.0.5 │    │10.0.0.6 │
-   └─────────┘    └─────────┘    └─────────┘
+                        |
+                        v
+              +-----------------+
+              | Public Frontend |
+              |   IP: 1.2.3.4   |
+              +--------+--------+
+                       |
+              +--------v--------+
+              |  Load Balancer  |
+              |   (Standard)    |
+              +--------+--------+
+                       |
+        +--------------+--------------+
+        |              |              |
+   +----v----+    +----v----+    +----v----+
+   |   VM1   |    |   VM2   |    |   VM3   |
+   |10.0.0.4 |    |10.0.0.5 |    |10.0.0.6 |
+   +---------+    +---------+    +---------+
               Backend Pool
 ```
 
@@ -65,16 +65,16 @@ Azure Load Balancer distributes inbound traffic across backend resources. It ope
 
 ```
     Web Tier                    App Tier
-   ┌────────┐               ┌────────────────┐
-   │  VM1   │───┐           │ Internal LB    │
-   │  VM2   │───┼──────────▶│ 10.0.2.100     │
-   │  VM3   │───┘           └───────┬────────┘
-   └────────┘                       │
-                     ┌──────────────┼──────────────┐
-                     │              │              │
-                ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
-                │  AppVM1 │    │  AppVM2 │    │  AppVM3 │
-                └─────────┘    └─────────┘    └─────────┘
+   +--------+               +----------------+
+   |  VM1   |---+           | Internal LB    |
+   |  VM2   |---+---------->| 10.0.2.100     |
+   |  VM3   |---+           +-------+--------+
+   +--------+                       |
+                     +--------------+--------------+
+                     |              |              |
+                +----v----+    +----v----+    +----v----+
+                |  AppVM1 |    |  AppVM2 |    |  AppVM3 |
+                +---------+    +---------+    +---------+
 ```
 
 ## Health Probes
@@ -101,13 +101,13 @@ Health check: http://<backend-ip>:80/health
 
 ```
 Healthy VM (responds to probes)
-├── Receives traffic from LB
-└── Counted in active backend pool
++-- Receives traffic from LB
++-- Counted in active backend pool
 
 Unhealthy VM (fails probes)
-├── Removed from rotation
-├── No new connections
-└── Existing connections may continue
++-- Removed from rotation
++-- No new connections
++-- Existing connections may continue
 ```
 
 ## Load Balancing Rules
@@ -149,12 +149,12 @@ Use cases:
 ### SNAT (Source NAT)
 
 ```
-┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│  Backend VM │ ──▶  │Load Balancer│ ──▶  │  Internet   │
-│ 10.0.0.4    │      │ 1.2.3.4     │      │(dest: 5.6.7.8)
-└─────────────┘      └─────────────┘      └─────────────┘
++-------------+      +-------------+      +-------------+
+|  Backend VM | -->  |Load Balancer| -->  |  Internet   |
+| 10.0.0.4    |      | 1.2.3.4     |      |(dest: 5.6.7.8)
++-------------+      +-------------+      +-------------+
 
-Source IP: 10.0.0.4 → Translated to: 1.2.3.4
+Source IP: 10.0.0.4 -> Translated to: 1.2.3.4
 ```
 
 ### Outbound Rules
@@ -181,13 +181,13 @@ Port forwarding to specific backend instances.
 
 ```
 Frontend IP: 1.2.3.4
-┌─────────────────────────────────┐
-│ Port 50001 ──────▶ VM1:22 (SSH) │
-│ Port 50002 ──────▶ VM2:22 (SSH) │
-│ Port 50003 ──────▶ VM3:22 (SSH) │
-└─────────────────────────────────┘
++---------------------------------+
+| Port 50001 ------> VM1:22 (SSH) |
+| Port 50002 ------> VM2:22 (SSH) |
+| Port 50003 ------> VM3:22 (SSH) |
++---------------------------------+
 
-Connect: ssh user@1.2.3.4 -p 50001 → VM1
+Connect: ssh user@1.2.3.4 -p 50001 -> VM1
 ```
 
 ## Cross-Region Load Balancer
@@ -196,19 +196,19 @@ Global load balancing across regions (Standard SKU).
 
 ```
                      Global LB
-                   ┌───────────┐
-                   │           │
-        ┌──────────┴───────────┴──────────┐
-        │                                  │
-   ┌────▼────┐                        ┌────▼────┐
-   │Regional │                        │Regional │
-   │LB (East)│                        │LB (West)│
-   └────┬────┘                        └────┬────┘
-        │                                  │
-   ┌────▼────┐                        ┌────▼────┐
-   │ Backend │                        │ Backend │
-   │  Pool   │                        │  Pool   │
-   └─────────┘                        └─────────┘
+                   +-----------+
+                   |           |
+        +----------+-----------+----------+
+        |                                  |
+   +----v----+                        +----v----+
+   |Regional |                        |Regional |
+   |LB (East)|                        |LB (West)|
+   +----+----+                        +----+----+
+        |                                  |
+   +----v----+                        +----v----+
+   | Backend |                        | Backend |
+   |  Pool   |                        |  Pool   |
+   +---------+                        +---------+
 ```
 
 ## CLI Quick Reference

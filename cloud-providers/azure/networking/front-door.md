@@ -23,22 +23,22 @@ Azure Front Door is a global, scalable entry point that uses Microsoft's global 
 ```
                             Global Edge Network
                            (150+ Edge Locations)
-                                    │
-Users ─────────────────────────────▼────────────────────────────────
-        │                    ┌──────────────┐                     │
-   (Europe)                  │  Front Door  │               (Asia)
-        │                    │   (Anycast)  │                     │
-        └───────────────────►│              │◄────────────────────┘
-                             └──────┬───────┘
-                                    │
-               ┌────────────────────┼────────────────────┐
-               │                    │                    │
-               ▼                    ▼                    ▼
-        ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-        │ Origin Group │   │ Origin Group │   │ Origin Group │
-        │   (US East)  │   │  (US West)   │   │   (Europe)   │
-        │  App Service │   │  App Service │   │    VM Pool   │
-        └──────────────┘   └──────────────┘   └──────────────┘
+                                    |
+Users ------------------------------v------------------------------------
+        |                    +--------------+                     |
+   (Europe)                  |  Front Door  |               (Asia)
+        |                    |   (Anycast)  |                     |
+        +------------------->|              |<--------------------+
+                             +------+-------+
+                                    |
+               +--------------------+--------------------+
+               |                    |                    |
+               v                    v                    v
+        +--------------+   +--------------+   +--------------+
+        | Origin Group |   | Origin Group |   | Origin Group |
+        |   (US East)  |   |  (US West)   |   |   (Europe)   |
+        |  App Service |   |  App Service |   |    VM Pool   |
+        +--------------+   +--------------+   +--------------+
 ```
 
 ## Tiers
@@ -61,34 +61,34 @@ Users ────────────────────────�
 
 ```
 User in Tokyo
-    │
-    ▼ (measures latency)
+    |
+    v (measures latency)
 Front Door Edge
-    │
-    ├── Origin East US: 150ms
-    ├── Origin West Europe: 200ms
-    └── Origin Japan: 20ms ← Selected (lowest)
+    |
+    +-- Origin East US: 150ms
+    +-- Origin West Europe: 200ms
+    +-- Origin Japan: 20ms <- Selected (lowest)
 ```
 
 ### Priority-Based Routing
 
 ```
 Origin Group:
-├── Priority 1: East US (Active)
-│   └── If healthy → Route here
-├── Priority 2: West US (Standby)
-│   └── If Priority 1 down → Route here
-└── Priority 3: Europe (DR)
-    └── Last resort
++-- Priority 1: East US (Active)
+|   +-- If healthy -> Route here
++-- Priority 2: West US (Standby)
+|   +-- If Priority 1 down -> Route here
++-- Priority 3: Europe (DR)
+    +-- Last resort
 ```
 
 ### Weighted Distribution
 
 ```
 Origin Group (100% total):
-├── East US: 70%
-├── West US: 20%
-└── Europe: 10%
++-- East US: 70%
++-- West US: 20%
++-- Europe: 10%
 ```
 
 ## Health Probes
@@ -235,7 +235,7 @@ Premium tier only.
 Connect to private backends (Premium tier).
 
 ```
-Front Door ─────────────▶ Private Endpoint ──▶ Internal App Service
+Front Door --------------> Private Endpoint --> Internal App Service
                               (Private Link)
             (No public endpoint needed)
 ```

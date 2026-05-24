@@ -22,31 +22,31 @@ Azure API Management (APIM) is a hybrid, multicloud management platform for APIs
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Azure API Management                      │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │                   API Gateway                          │  │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐ │  │
-│  │  │ Inbound │→ │ Backend │→ │Outbound │→ │ On-Error│ │  │
-│  │  │ Policy  │  │ Request │  │ Policy  │  │ Policy  │ │  │
-│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘ │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                           │                                  │
-│  ┌────────────────────────▼────────────────────────────┐   │
-│  │                 Developer Portal                      │   │
-│  │   • API Documentation  • Try APIs  • Subscribe       │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-              ┌─────────────────────────┐
-              │     Backend APIs        │
-              │  • Azure Functions      │
-              │  • App Service          │
-              │  • Logic Apps           │
-              │  • External APIs        │
-              └─────────────────────────┘
++-------------------------------------------------------------+
+|                    Azure API Management                     |
+|                                                             |
+|  +-------------------------------------------------------+  |
+|  |                   API Gateway                         |  |
+|  |  +---------+  +---------+  +---------+  +---------+  |  |
+|  |  | Inbound |->| Backend |->|Outbound |->| On-Error|  |  |
+|  |  | Policy  |  | Request |  | Policy  |  | Policy  |  |  |
+|  |  +---------+  +---------+  +---------+  +---------+  |  |
+|  +-------------------------------------------------------+  |
+|                           |                                 |
+|  +------------------------v------------------------------+  |
+|  |                 Developer Portal                      |  |
+|  |   - API Documentation  - Try APIs  - Subscribe        |  |
+|  +-------------------------------------------------------+  |
++-------------------------------------------------------------+
+                           |
+                           v
+              +-------------------------+
+              |     Backend APIs        |
+              |  - Azure Functions      |
+              |  - App Service          |
+              |  - Logic Apps           |
+              |  - External APIs        |
+              +-------------------------+
 ```
 
 ## Tiers
@@ -74,25 +74,25 @@ Azure API Management (APIM) is a hybrid, multicloud management platform for APIs
 
 ```
 APIM Instance
-├── Products
-│   ├── Free Tier (rate limited)
-│   │   ├── Weather API
-│   │   └── Maps API (read-only)
-│   └── Premium (higher limits)
-│       ├── Weather API (full)
-│       ├── Maps API (full)
-│       └── Analytics API
-├── APIs
-│   ├── Weather API
-│   │   ├── GET /current
-│   │   ├── GET /forecast
-│   │   └── POST /alerts
-│   └── Maps API
-│       ├── GET /geocode
-│       └── GET /directions
-└── Subscriptions
-    ├── Developer A → Free Tier
-    └── Company B → Premium
++-- Products
+|   +-- Free Tier (rate limited)
+|   |   +-- Weather API
+|   |   +-- Maps API (read-only)
+|   +-- Premium (higher limits)
+|       +-- Weather API (full)
+|       +-- Maps API (full)
+|       +-- Analytics API
++-- APIs
+|   +-- Weather API
+|   |   +-- GET /current
+|   |   +-- GET /forecast
+|   |   +-- POST /alerts
+|   +-- Maps API
+|       +-- GET /geocode
+|       +-- GET /directions
++-- Subscriptions
+    +-- Developer A -> Free Tier
+    +-- Company B -> Premium
 ```
 
 ## Policies
@@ -230,9 +230,9 @@ Non-breaking changes within a version.
 
 ```
 API: Weather v1
-├── Revision 1 (original)
-├── Revision 2 (bug fix)
-└── Revision 3 (current) ← Live
++-- Revision 1 (original)
++-- Revision 2 (bug fix)
++-- Revision 3 (current) <- Live
 
 Test revisions via: ;rev=2 suffix
 ```

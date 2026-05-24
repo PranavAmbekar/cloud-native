@@ -29,31 +29,31 @@ Azure DNS provides DNS domain hosting using Microsoft Azure infrastructure. It s
 
 | Type | Description | Example |
 |------|-------------|---------|
-| A | IPv4 address | www → 1.2.3.4 |
-| AAAA | IPv6 address | www → 2001:db8::1 |
-| CNAME | Canonical name (alias) | www → myapp.azurewebsites.net |
-| MX | Mail exchange | @ → mail.example.com |
-| TXT | Text record | @ → "v=spf1 include:_spf.google.com" |
-| NS | Name server | @ → ns1-01.azure-dns.com |
+| A | IPv4 address | www -> 1.2.3.4 |
+| AAAA | IPv6 address | www -> 2001:db8::1 |
+| CNAME | Canonical name (alias) | www -> myapp.azurewebsites.net |
+| MX | Mail exchange | @ -> mail.example.com |
+| TXT | Text record | @ -> "v=spf1 include:_spf.google.com" |
+| NS | Name server | @ -> ns1-01.azure-dns.com |
 | SOA | Start of authority | Auto-managed |
-| SRV | Service location | _sip._tcp → sipserver:5060 |
-| CAA | Certificate authority | @ → "0 issue letsencrypt.org" |
-| PTR | Reverse lookup | 4.3.2.1 → server.example.com |
+| SRV | Service location | _sip._tcp -> sipserver:5060 |
+| CAA | Certificate authority | @ -> "0 issue letsencrypt.org" |
+| PTR | Reverse lookup | 4.3.2.1 -> server.example.com |
 
 ### Record Set
 
 ```
 Zone: contoso.com
-├── @ (apex)
-│   ├── A: 1.2.3.4, 1.2.3.5 (multiple values)
-│   ├── MX: mail.contoso.com (priority 10)
-│   └── TXT: "v=spf1 include:_spf.microsoft.com"
-├── www
-│   └── CNAME: contoso.azurewebsites.net
-├── api
-│   └── A: 5.6.7.8
-└── mail
-    └── A: 9.10.11.12
+|-- @ (apex)
+|   |-- A: 1.2.3.4, 1.2.3.5 (multiple values)
+|   |-- MX: mail.contoso.com (priority 10)
+|   +-- TXT: "v=spf1 include:_spf.microsoft.com"
+|-- www
+|   +-- CNAME: contoso.azurewebsites.net
+|-- api
+|   +-- A: 5.6.7.8
++-- mail
+    +-- A: 9.10.11.12
 ```
 
 ### Alias Records
@@ -70,10 +70,10 @@ Point to Azure resources instead of static IPs.
 
 ```
 Standard A Record:
-  www.contoso.com → 1.2.3.4 (static)
+  www.contoso.com -> 1.2.3.4 (static)
 
 Alias Record:
-  www.contoso.com → [Azure Public IP resource]
+  www.contoso.com -> [Azure Public IP resource]
   (Auto-updates when IP changes)
 ```
 
@@ -82,11 +82,11 @@ Alias Record:
 CNAME not allowed at apex. Use Alias records instead.
 
 ```
-✗ Cannot do:
-  contoso.com CNAME → myapp.azurewebsites.net
+X Cannot do:
+  contoso.com CNAME -> myapp.azurewebsites.net
 
-✓ Can do:
-  contoso.com ALIAS → myapp.azurewebsites.net
+OK Can do:
+  contoso.com ALIAS -> myapp.azurewebsites.net
   (Uses Azure Alias record feature)
 ```
 
@@ -95,25 +95,25 @@ CNAME not allowed at apex. Use Alias records instead.
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│           Private DNS Zone: contoso.internal                │
-│                                                              │
-│  Records:                                                    │
-│  ├── vm1 → 10.0.1.4                                        │
-│  ├── vm2 → 10.0.1.5                                        │
-│  ├── sql → 10.0.2.10                                       │
-│  └── api → 10.0.3.20                                       │
-│                                                              │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
++-------------------------------------------------------------+
+|           Private DNS Zone: contoso.internal                |
+|                                                             |
+|  Records:                                                   |
+|  |-- vm1 -> 10.0.1.4                                        |
+|  |-- vm2 -> 10.0.1.5                                        |
+|  |-- sql -> 10.0.2.10                                       |
+|  +-- api -> 10.0.3.20                                       |
+|                                                             |
++---------------------------+---------------------------------+
+                            |
                Virtual Network Links
-                            │
-          ┌─────────────────┼─────────────────┐
-          │                 │                 │
-    ┌─────▼─────┐     ┌─────▼─────┐     ┌─────▼─────┐
-    │  VNet-Prod │     │  VNet-Dev │     │ VNet-Test │
-    │  (Auto-reg)│     │           │     │           │
-    └───────────┘     └───────────┘     └───────────┘
+                            |
+          +-----------------+-----------------+
+          |                 |                 |
+    +-----v-----+     +-----v-----+     +-----v-----+
+    |  VNet-Prod |     |  VNet-Dev |     | VNet-Test |
+    |  (Auto-reg)|     |           |     |           |
+    +-----------+     +-----------+     +-----------+
 ```
 
 ### Auto-Registration
@@ -122,12 +122,12 @@ Automatically create DNS records for VMs.
 
 ```
 VNet with Auto-Registration enabled:
-├── VM created (vm1, IP: 10.0.1.4)
-│   └── DNS record auto-created: vm1.contoso.internal → 10.0.1.4
-├── VM deleted
-│   └── DNS record auto-deleted
-└── VM IP changed
-    └── DNS record auto-updated
+|-- VM created (vm1, IP: 10.0.1.4)
+|   +-- DNS record auto-created: vm1.contoso.internal -> 10.0.1.4
+|-- VM deleted
+|   +-- DNS record auto-deleted
++-- VM IP changed
+    +-- DNS record auto-updated
 ```
 
 ### Private DNS for Azure Services
@@ -147,10 +147,10 @@ Common private DNS zones for Azure Private Endpoints:
 Private Endpoint DNS Resolution:
 
 mystorageaccount.blob.core.windows.net
-    │
-    └── CNAME: mystorageaccount.privatelink.blob.core.windows.net
-                    │
-                    └── A: 10.0.1.5 (Private Endpoint IP)
+    |
+    +-- CNAME: mystorageaccount.privatelink.blob.core.windows.net
+                    |
+                    +-- A: 10.0.1.5 (Private Endpoint IP)
 ```
 
 ## DNS Resolution Flow
@@ -159,32 +159,32 @@ mystorageaccount.blob.core.windows.net
 
 ```
 User (Browser)
-    │
-    ▼
+    |
+    v
 Recursive Resolver (ISP/8.8.8.8)
-    │
-    ├── Query: www.contoso.com?
-    │
-    ▼
-Root NS → .com NS → Azure DNS
-    │
-    └── Response: 1.2.3.4
+    |
+    |-- Query: www.contoso.com?
+    |
+    v
+Root NS -> .com NS -> Azure DNS
+    |
+    +-- Response: 1.2.3.4
 ```
 
 ### Private DNS (VNet)
 
 ```
 VM in VNet
-    │
-    ▼
+    |
+    v
 Azure DNS (168.63.129.16)
-    │
-    ├── Query: vm1.contoso.internal?
-    │
-    ▼
+    |
+    |-- Query: vm1.contoso.internal?
+    |
+    v
 Private DNS Zone (linked to VNet)
-    │
-    └── Response: 10.0.1.4
+    |
+    +-- Response: 10.0.1.4
 ```
 
 ## DNS Forwarding
@@ -192,20 +192,20 @@ Private DNS Zone (linked to VNet)
 ### Custom DNS Server
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                        VNet                          │
-│                                                      │
-│  ┌──────────────────────────────────────────────┐  │
-│  │           Custom DNS Server                    │  │
-│  │                10.0.0.4                        │  │
-│  │                                                │  │
-│  │  Conditional Forwarders:                      │  │
-│  │  ├── *.internal → Private DNS Zone           │  │
-│  │  └── * → Azure DNS (168.63.129.16)           │  │
-│  └──────────────────────────────────────────────┘  │
-│                                                      │
-│  VNet DNS Settings: 10.0.0.4                       │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|                        VNet                         |
+|                                                     |
+|  +-----------------------------------------------+  |
+|  |           Custom DNS Server                   |  |
+|  |                10.0.0.4                       |  |
+|  |                                               |  |
+|  |  Conditional Forwarders:                      |  |
+|  |  |-- *.internal -> Private DNS Zone          |  |
+|  |  +-- * -> Azure DNS (168.63.129.16)          |  |
+|  +-----------------------------------------------+  |
+|                                                     |
+|  VNet DNS Settings: 10.0.0.4                        |
++-----------------------------------------------------+
 ```
 
 ### Azure DNS Private Resolver
@@ -213,19 +213,19 @@ Private DNS Zone (linked to VNet)
 Managed DNS forwarding service.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Azure DNS Private Resolver                │
-│                                                              │
-│  ┌─────────────────────┐    ┌─────────────────────┐        │
-│  │   Inbound Endpoint  │    │  Outbound Endpoint  │        │
-│  │   (VNet queries)    │    │ (Forward to on-prem)│        │
-│  │     10.0.1.4        │    │     10.0.2.4        │        │
-│  └─────────────────────┘    └─────────────────────┘        │
-│                                                              │
-│  Forwarding Rules:                                          │
-│  ├── onprem.local → 192.168.1.1 (on-prem DNS)             │
-│  └── azure.com → Azure DNS                                  │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                    Azure DNS Private Resolver               |
+|                                                             |
+|  +---------------------+    +---------------------+         |
+|  |   Inbound Endpoint  |    |  Outbound Endpoint  |         |
+|  |   (VNet queries)    |    | (Forward to on-prem)|         |
+|  |     10.0.1.4        |    |     10.0.2.4        |         |
+|  +---------------------+    +---------------------+         |
+|                                                             |
+|  Forwarding Rules:                                          |
+|  |-- onprem.local -> 192.168.1.1 (on-prem DNS)              |
+|  +-- azure.com -> Azure DNS                                 |
++-------------------------------------------------------------+
 ```
 
 ## Delegation
@@ -234,12 +234,12 @@ Managed DNS forwarding service.
 
 ```
 Parent Zone: contoso.com (external registrar or Azure)
-    │
-    └── NS record: dev.contoso.com → Azure DNS name servers
+    |
+    +-- NS record: dev.contoso.com -> Azure DNS name servers
 
 Child Zone: dev.contoso.com (Azure DNS)
-    ├── www → 1.2.3.4
-    └── api → 5.6.7.8
+    |-- www -> 1.2.3.4
+    +-- api -> 5.6.7.8
 ```
 
 ### Delegate to Azure DNS

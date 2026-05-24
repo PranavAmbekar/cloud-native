@@ -21,16 +21,16 @@
 
 ### EC2 Launch Type
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       ECS Cluster                           │
-│  ┌────────────────────┐    ┌────────────────────┐          │
-│  │   EC2 Instance     │    │   EC2 Instance     │          │
-│  │   (ECS Agent)      │    │   (ECS Agent)      │          │
-│  │  ┌──────┐ ┌──────┐ │    │  ┌──────┐ ┌──────┐ │          │
-│  │  │Task 1│ │Task 2│ │    │  │Task 3│ │Task 4│ │          │
-│  │  └──────┘ └──────┘ │    │  └──────┘ └──────┘ │          │
-│  └────────────────────┘    └────────────────────┘          │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                       ECS Cluster                           |
+|  +--------------------+    +--------------------+          |
+|  |   EC2 Instance     |    |   EC2 Instance     |          |
+|  |   (ECS Agent)      |    |   (ECS Agent)      |          |
+|  |  +------+ +------+ |    |  +------+ +------+ |          |
+|  |  |Task 1| |Task 2| |    |  |Task 3| |Task 4| |          |
+|  |  +------+ +------+ |    |  +------+ +------+ |          |
+|  +--------------------+    +--------------------+          |
++-------------------------------------------------------------+
 ```
 
 - You manage EC2 instances
@@ -39,15 +39,15 @@
 
 ### Fargate Launch Type
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       ECS Cluster                           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │  Task 1  │  │  Task 2  │  │  Task 3  │  │  Task 4  │   │
-│  │(Fargate) │  │(Fargate) │  │(Fargate) │  │(Fargate) │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-│                                                             │
-│            (No EC2 management - serverless)                │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                       ECS Cluster                           |
+|  +----------+  +----------+  +----------+  +----------+   |
+|  |  Task 1  |  |  Task 2  |  |  Task 3  |  |  Task 4  |   |
+|  |(Fargate) |  |(Fargate) |  |(Fargate) |  |(Fargate) |   |
+|  +----------+  +----------+  +----------+  +----------+   |
+|                                                             |
+|            (No EC2 management - serverless)                |
++-------------------------------------------------------------+
 ```
 
 - Serverless - no EC2 management
@@ -158,14 +158,14 @@ What your application needs:
 
 ### awsvpc Mode
 ```
-┌─────────────────────────────────────────┐
-│              VPC Subnet                  │
-│  ┌─────────────┐    ┌─────────────┐     │
-│  │   Task 1    │    │   Task 2    │     │
-│  │ ENI: 10.0.1.5│   │ ENI: 10.0.1.6│    │
-│  │ SG: sg-xxx  │    │ SG: sg-xxx  │     │
-│  └─────────────┘    └─────────────┘     │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|              VPC Subnet                  |
+|  +-------------+    +-------------+     |
+|  |   Task 1    |    |   Task 2    |     |
+|  | ENI: 10.0.1.5|   | ENI: 10.0.1.6|    |
+|  | SG: sg-xxx  |    | SG: sg-xxx  |     |
+|  +-------------+    +-------------+     |
++-----------------------------------------+
 ```
 
 - Each task gets private IP
@@ -180,19 +180,19 @@ Maintain desired count of tasks.
 
 ```yaml
 Service: my-service
-├── Desired Count: 3
-├── Task Definition: my-app:5
-├── Launch Type: FARGATE
-├── Network:
-│   ├── Subnets: [subnet-a, subnet-b]
-│   └── Security Groups: [sg-xxx]
-├── Load Balancer:
-│   ├── Target Group: my-tg
-│   └── Container: app:8080
-└── Auto Scaling:
-    ├── Min: 2
-    ├── Max: 10
-    └── Policy: Target CPU 70%
++-- Desired Count: 3
++-- Task Definition: my-app:5
++-- Launch Type: FARGATE
++-- Network:
+|   +-- Subnets: [subnet-a, subnet-b]
+|   +-- Security Groups: [sg-xxx]
++-- Load Balancer:
+|   +-- Target Group: my-tg
+|   +-- Container: app:8080
++-- Auto Scaling:
+    +-- Min: 2
+    +-- Max: 10
+    +-- Policy: Target CPU 70%
 ```
 
 ### Deployment Strategies
@@ -220,20 +220,20 @@ Desired: 4 tasks
 Automatic DNS registration.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Cloud Map Namespace                       │
-│                   (internal.myapp.local)                    │
-│                                                             │
-│   Service: api                    Service: worker           │
-│   DNS: api.internal.myapp.local   DNS: worker.internal...   │
-│        │                               │                    │
-│   ┌────┴────┐                    ┌────┴────┐               │
-│   │ Task A  │                    │ Task X  │               │
-│   │10.0.1.5 │                    │10.0.1.8 │               │
-│   │ Task B  │                    │ Task Y  │               │
-│   │10.0.1.6 │                    │10.0.1.9 │               │
-│   └─────────┘                    └─────────┘               │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                    Cloud Map Namespace                       |
+|                   (internal.myapp.local)                    |
+|                                                             |
+|   Service: api                    Service: worker           |
+|   DNS: api.internal.myapp.local   DNS: worker.internal...   |
+|        |                               |                    |
+|   +----+----+                    +----+----+               |
+|   | Task A  |                    | Task X  |               |
+|   |10.0.1.5 |                    |10.0.1.8 |               |
+|   | Task B  |                    | Task Y  |               |
+|   |10.0.1.6 |                    |10.0.1.9 |               |
+|   +---------+                    +---------+               |
++-------------------------------------------------------------+
 ```
 
 - DNS A records or SRV records
@@ -246,7 +246,7 @@ Automatic DNS registration.
 
 ### Service Auto Scaling
 ```
-CloudWatch Metric ──▶ Scaling Policy ──▶ Adjust Desired Count
+CloudWatch Metric --> Scaling Policy --> Adjust Desired Count
 ```
 
 Scaling policies:
@@ -256,8 +256,8 @@ Scaling policies:
 
 ### Cluster Auto Scaling (EC2)
 ```
-ECS Capacity Provider ──▶ Auto Scaling Group
-                              │
+ECS Capacity Provider --> Auto Scaling Group
+                              |
                     Add/remove EC2 instances
 ```
 
@@ -266,19 +266,19 @@ ECS Capacity Provider ──▶ Auto Scaling Group
 ## Load Balancer Integration
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                           ALB                               │
-│                            │                                │
-│              ┌─────────────┴─────────────┐                 │
-│              ▼                           ▼                  │
-│        Target Group 1              Target Group 2          │
-│        (path: /api/*)             (path: /web/*)           │
-│              │                           │                  │
-│    ┌─────────┴─────────┐       ┌────────┴────────┐        │
-│    ▼         ▼         ▼       ▼        ▼        ▼        │
-│  Task 1   Task 2    Task 3   Task 4  Task 5   Task 6      │
-│  (API)    (API)     (API)    (Web)   (Web)    (Web)       │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                           ALB                               |
+|                            |                                |
+|              +-------------+-------------+                 |
+|              v                           v                  |
+|        Target Group 1              Target Group 2          |
+|        (path: /api/*)             (path: /web/*)           |
+|              |                           |                  |
+|    +---------+---------+       +--------+--------+        |
+|    v         v         v       v        v        v        |
+|  Task 1   Task 2    Task 3   Task 4  Task 5   Task 6      |
+|  (API)    (API)     (API)    (Web)   (Web)    (Web)       |
++-------------------------------------------------------------+
 ```
 
 - ALB/NLB supported

@@ -20,31 +20,31 @@ Azure Event Grid is a fully managed event routing service that enables event-dri
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Event Sources                                │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │
-│  │ Storage │ │ Service │ │  Event  │ │ Custom  │ │   IoT   │  │
-│  │ Account │ │   Bus   │ │   Hub   │ │  Topic  │ │   Hub   │  │
-│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘  │
-└───────┼───────────┼───────────┼───────────┼───────────┼────────┘
-        │           │           │           │           │
-        └───────────┴───────────┴─────┬─────┴───────────┘
-                                      │
-                               ┌──────▼──────┐
-                               │ Event Grid  │
-                               │   Topic     │
-                               └──────┬──────┘
-                                      │
-           ┌──────────────────────────┼──────────────────────────┐
-           │                          │                          │
-    ┌──────▼──────┐           ┌──────▼──────┐           ┌──────▼──────┐
-    │Subscription │           │Subscription │           │Subscription │
-    │  (Filter)   │           │  (Filter)   │           │  (Filter)   │
-    └──────┬──────┘           └──────┬──────┘           └──────┬──────┘
-           │                          │                          │
-    ┌──────▼──────┐           ┌──────▼──────┐           ┌──────▼──────┐
-    │  Function   │           │  Logic App  │           │   Webhook   │
-    └─────────────┘           └─────────────┘           └─────────────┘
++------------------------------------------------------------------+
+|                     Event Sources                                |
+|  +---------+ +---------+ +---------+ +---------+ +---------+     |
+|  | Storage | | Service | |  Event  | | Custom  | |   IoT   |     |
+|  | Account | |   Bus   | |   Hub   | |  Topic  | |   Hub   |     |
+|  +----+----+ +----+----+ +----+----+ +----+----+ +----+----+     |
++-------|-----------|-----------|-----------|-----------|---------+
+        |           |           |           |           |
+        +-----------+-----------+-----+-----+-----------+
+                                      |
+                               +------v------+
+                               | Event Grid  |
+                               |   Topic     |
+                               +------+------+
+                                      |
+           +--------------------------+-------------------------+
+           |                          |                         |
+    +------v------+           +------v------+           +------v------+
+    |Subscription |           |Subscription |           |Subscription |
+    |  (Filter)   |           |  (Filter)   |           |  (Filter)   |
+    +------+------+           +------+------+           +------+------+
+           |                          |                         |
+    +------v------+           +------v------+           +------v------+
+    |  Function   |           |  Logic App  |           |   Webhook   |
+    +-------------+           +-------------+           +-------------+
 ```
 
 ## Topic Types
@@ -252,12 +252,12 @@ Multi-tenant event publishing.
 
 ```
 Event Domain: contoso-domain
-├── Topic: tenant-1
-│   ├── Subscription → tenant1-handler
-├── Topic: tenant-2
-│   ├── Subscription → tenant2-handler
-└── Topic: tenant-3
-    └── Subscription → tenant3-handler
++-- Topic: tenant-1
+|   +-- Subscription -> tenant1-handler
++-- Topic: tenant-2
+|   +-- Subscription -> tenant2-handler
++-- Topic: tenant-3
+    +-- Subscription -> tenant3-handler
 ```
 
 ```bash
@@ -275,8 +275,9 @@ endpoint="https://myeventdomain.eastus-1.eventgrid.azure.net/api/events"
 ## Dead-Lettering and Retry
 
 ```
-Event → Handler (fail) → Retry (exponential backoff)
-                              ↓ (after max retries)
+Event --> Handler (fail) --> Retry (exponential backoff)
+                              | (after max retries)
+                              v
                         Dead-letter Storage
 ```
 

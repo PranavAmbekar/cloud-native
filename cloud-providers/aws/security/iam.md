@@ -21,20 +21,20 @@ IAM enables you to manage access to AWS services. You create users, groups, role
 
 ```
 AWS Account (Root User)
-    │
-    ├── IAM Users
-    │   └── Attached Policies (direct or via groups)
-    │
-    ├── IAM Groups
-    │   └── Attached Policies (inherited by members)
-    │
-    ├── IAM Roles
-    │   └── Trust Policy + Permission Policies
-    │
-    └── IAM Policies
-        ├── AWS Managed Policies
-        ├── Customer Managed Policies
-        └── Inline Policies
+    |
+    +-- IAM Users
+    |   +-- Attached Policies (direct or via groups)
+    |
+    +-- IAM Groups
+    |   +-- Attached Policies (inherited by members)
+    |
+    +-- IAM Roles
+    |   +-- Trust Policy + Permission Policies
+    |
+    +-- IAM Policies
+        +-- AWS Managed Policies
+        +-- Customer Managed Policies
+        +-- Inline Policies
 ```
 
 ## Policy Structure
@@ -155,22 +155,22 @@ AWS Account (Root User)
 ## Permission Evaluation Logic
 
 ```
-┌──────────────────────────────────────────────────┐
-│                 Is there an                       │
-│               EXPLICIT DENY?                      │
-│                     │                             │
-│         Yes ────────┼────────── No               │
-│          │          │           │                │
-│          ▼          │           ▼                │
-│        DENY         │   Is there an              │
-│                     │   EXPLICIT ALLOW?          │
-│                     │           │                │
-│                     │  Yes ─────┼───── No        │
-│                     │   │       │       │        │
-│                     │   ▼       │       ▼        │
-│                     │ ALLOW     │   IMPLICIT     │
-│                     │           │     DENY       │
-└──────────────────────────────────────────────────┘
++-------------------------------------------------+
+|                  Is there an                    |
+|                EXPLICIT DENY?                   |
+|                      |                          |
+|          Yes --------+--------- No              |
+|           |          |          |               |
+|           v          |          v               |
+|         DENY         |    Is there an           |
+|                      |    EXPLICIT ALLOW?       |
+|                      |          |               |
+|                      |   Yes ---+----- No       |
+|                      |    |     |      |        |
+|                      |    v     |      v        |
+|                      |  ALLOW   |   IMPLICIT    |
+|                      |          |     DENY      |
++-------------------------------------------------+
 
 Order: Explicit Deny > Explicit Allow > Implicit Deny
 ```
@@ -206,12 +206,12 @@ Example:
 
 ```
 Identity Source (Azure AD, Okta)
-         │
-         ▼
+         |
+         v
 IAM Identity Center
-         │
-    ┌────┴────┐
-    │         │
+         |
+    +----+----+
+    |         |
 Account A  Account B
  (Admin)   (ReadOnly)
 ```

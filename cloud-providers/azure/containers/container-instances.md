@@ -20,24 +20,24 @@ Azure Container Instances (ACI) offers the fastest and simplest way to run a con
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Container Group                          │
-│                                                              │
-│  ┌───────────────────┐  ┌───────────────────┐              │
-│  │    Container 1    │  │    Container 2    │              │
-│  │   (Web Server)    │  │   (Sidecar/Log)   │              │
-│  │   Port: 80        │  │                   │              │
-│  └───────────────────┘  └───────────────────┘              │
-│            │                     │                          │
-│            └──────────┬──────────┘                          │
-│                       │                                      │
-│              Shared Resources:                              │
-│              • Network (same IP)                            │
-│              • Volumes                                       │
-│              • Lifecycle                                     │
-│                                                              │
-│  Public IP: 1.2.3.4  or  Private (VNet)                    │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                     Container Group                         |
+|                                                             |
+|  +-------------------+  +-------------------+               |
+|  |    Container 1    |  |    Container 2    |               |
+|  |   (Web Server)    |  |   (Sidecar/Log)   |               |
+|  |   Port: 80        |  |                   |               |
+|  +-------------------+  +-------------------+               |
+|            |                     |                          |
+|            +---------+-----------+                          |
+|                      |                                      |
+|              Shared Resources:                              |
+|              - Network (same IP)                            |
+|              - Volumes                                      |
+|              - Lifecycle                                    |
+|                                                             |
+|  Public IP: 1.2.3.4  or  Private (VNet)                     |
++-------------------------------------------------------------+
 ```
 
 ## Container Group Configuration
@@ -168,9 +168,9 @@ az container create \
 
 ```
 VNet: 10.0.0.0/16
-└── Subnet: 10.0.1.0/24
-    └── Delegated to: Microsoft.ContainerInstance/containerGroups
-        └── Container Group: 10.0.1.4 (private IP)
++-- Subnet: 10.0.1.0/24
+    +-- Delegated to: Microsoft.ContainerInstance/containerGroups
+        +-- Container Group: 10.0.1.4 (private IP)
 ```
 
 ## Storage

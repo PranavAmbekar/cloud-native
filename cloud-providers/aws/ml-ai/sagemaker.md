@@ -21,37 +21,37 @@
 ## ML Workflow
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    SageMaker ML Workflow                        │
-│                                                                 │
-│   1. PREPARE          2. BUILD           3. TRAIN & TUNE       │
-│   ┌──────────┐       ┌──────────┐       ┌──────────┐           │
-│   │Ground    │       │Studio    │       │Training  │           │
-│   │Truth     │──────▶│Notebooks │──────▶│Jobs      │           │
-│   │(labeling)│       │          │       │          │           │
-│   └──────────┘       └──────────┘       └──────────┘           │
-│        │                  │                  │                  │
-│        ▼                  ▼                  ▼                  │
-│   ┌──────────┐       ┌──────────┐       ┌──────────┐           │
-│   │Data      │       │Feature   │       │Hyper-    │           │
-│   │Wrangler  │       │Store     │       │parameter │           │
-│   │          │       │          │       │Tuning    │           │
-│   └──────────┘       └──────────┘       └──────────┘           │
-│                                              │                  │
-│   4. DEPLOY           5. MONITOR                               │
-│   ┌──────────┐       ┌──────────┐                              │
-│   │Endpoints │◀──────│Model     │                              │
-│   │(real-time│       │Registry  │                              │
-│   │ batch)   │       │          │                              │
-│   └──────────┘       └──────────┘                              │
-│        │                                                        │
-│        ▼                                                        │
-│   ┌──────────┐                                                  │
-│   │Model     │                                                  │
-│   │Monitor   │                                                  │
-│   └──────────┘                                                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                    SageMaker ML Workflow                        |
+|                                                                 |
+|   1. PREPARE          2. BUILD           3. TRAIN & TUNE       |
+|   +----------+       +----------+       +----------+           |
+|   |Ground    |       |Studio    |       |Training  |           |
+|   |Truth     |------>|Notebooks |------>|Jobs      |           |
+|   |(labeling)|       |          |       |          |           |
+|   +----------+       +----------+       +----------+           |
+|        |                  |                  |                  |
+|        v                  v                  v                  |
+|   +----------+       +----------+       +----------+           |
+|   |Data      |       |Feature   |       |Hyper-    |           |
+|   |Wrangler  |       |Store     |       |parameter |           |
+|   |          |       |          |       |Tuning    |           |
+|   +----------+       +----------+       +----------+           |
+|                                              |                  |
+|   4. DEPLOY           5. MONITOR                               |
+|   +----------+       +----------+                              |
+|   |Endpoints |<------|Model     |                              |
+|   |(real-time|       |Registry  |                              |
+|   | batch)   |       |          |                              |
+|   +----------+       +----------+                              |
+|        |                                                        |
+|        v                                                        |
+|   +----------+                                                  |
+|   |Model     |                                                  |
+|   |Monitor   |                                                  |
+|   +----------+                                                  |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ---
@@ -175,8 +175,8 @@ tuner.fit({'training': 's3://bucket/train'})
 ### Real-time Inference
 
 ```
-Client ──▶ Endpoint ──▶ Model Container ──▶ Response
-              │
+Client --> Endpoint --> Model Container --> Response
+              |
          Auto Scaling
          (1-N instances)
 ```
@@ -205,9 +205,9 @@ Host multiple models on single endpoint.
 
 ```
 Endpoint
-├── Model A (30% traffic)
-├── Model B (50% traffic)
-└── Model C (20% traffic)
++-- Model A (30% traffic)
++-- Model B (50% traffic)
++-- Model C (20% traffic)
 ```
 
 ### Serverless Inference
@@ -230,25 +230,25 @@ predictor = model.deploy(serverless_inference_config=serverless_config)
 Centralized repository for ML features.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                       Feature Store                             │
-│                                                                 │
-│   Feature Group: customer_features                              │
-│   ├── customer_id (identifier)                                  │
-│   ├── total_purchases                                           │
-│   ├── average_order_value                                       │
-│   ├── days_since_last_purchase                                  │
-│   └── customer_segment                                          │
-│                                                                 │
-│   ┌───────────────┐         ┌───────────────┐                  │
-│   │ Online Store  │         │ Offline Store │                  │
-│   │ (low latency) │         │ (S3/Athena)   │                  │
-│   │               │         │               │                  │
-│   │ Real-time     │         │ Training      │                  │
-│   │ inference     │         │ data          │                  │
-│   └───────────────┘         └───────────────┘                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                       Feature Store                             |
+|                                                                 |
+|   Feature Group: customer_features                              |
+|   +-- customer_id (identifier)                                  |
+|   +-- total_purchases                                           |
+|   +-- average_order_value                                       |
+|   +-- days_since_last_purchase                                  |
+|   +-- customer_segment                                          |
+|                                                                 |
+|   +---------------+         +---------------+                  |
+|   | Online Store  |         | Offline Store |                  |
+|   | (low latency) |         | (S3/Athena)   |                  |
+|   |               |         |               |                  |
+|   | Real-time     |         | Training      |                  |
+|   | inference     |         | data          |                  |
+|   +---------------+         +---------------+                  |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 Benefits:
@@ -291,19 +291,19 @@ Detect model and data drift.
 
 ```
 Production Endpoint
-        │
-        ▼
-┌───────────────┐
-│ Model Monitor │
-│               │
-│ ├── Data Quality (input drift)
-│ ├── Model Quality (performance)
-│ ├── Bias Drift (fairness)
-│ └── Feature Attribution (explainability)
-│               │
-└───────────────┘
-        │
-        ▼
+        |
+        v
++---------------+
+| Model Monitor |
+|               |
+| +-- Data Quality (input drift)
+| +-- Model Quality (performance)
+| +-- Bias Drift (fairness)
+| +-- Feature Attribution (explainability)
+|               |
++---------------+
+        |
+        v
 CloudWatch Alerts
 ```
 
@@ -335,8 +335,8 @@ Active learning to reduce manual labeling.
 Visual data preparation tool.
 
 ```
-Import → Analyze → Transform → Export
-  │         │          │         │
+Import -> Analyze -> Transform -> Export
+  |         |          |         |
 S3/Redshift  EDA    300+ built-in  Feature Store
 Athena              transforms     S3
                                    Pipeline
@@ -367,8 +367,8 @@ Pre-trained models and solutions.
 No-code ML for business users.
 
 ```
-Upload Data → Select Target → AutoML → Deploy
-                                │
+Upload Data -> Select Target -> AutoML -> Deploy
+                                |
                           Automatic:
                           - Feature engineering
                           - Algorithm selection

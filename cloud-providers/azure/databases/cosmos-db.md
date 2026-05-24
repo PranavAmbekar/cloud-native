@@ -32,23 +32,23 @@ Azure Cosmos DB is a fully managed NoSQL database with single-digit millisecond 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Cosmos DB Account                       │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │                     Database                          │   │
-│  │  ┌───────────────────────────────────────────────┐  │   │
-│  │  │                  Container                      │  │   │
-│  │  │  ┌─────────────────────────────────────────┐  │  │   │
-│  │  │  │ Logical Partition (partition key value)  │  │  │   │
-│  │  │  │   ┌──────┐  ┌──────┐  ┌──────┐         │  │  │   │
-│  │  │  │   │ Item │  │ Item │  │ Item │         │  │  │   │
-│  │  │  │   └──────┘  └──────┘  └──────┘         │  │  │   │
-│  │  │  └─────────────────────────────────────────┘  │  │   │
-│  │  └───────────────────────────────────────────────┘  │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                              │
-│  Physical Partitions: Automatic, managed by Cosmos DB       │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                      Cosmos DB Account                      |
+|  +-------------------------------------------------------+  |
+|  |                     Database                          |  |
+|  |  +---------------------------------------------------+|  |
+|  |  |                  Container                        ||  |
+|  |  |  +-----------------------------------------------+||  |
+|  |  |  | Logical Partition (partition key value)       |||  |
+|  |  |  |   +------+  +------+  +------+                |||  |
+|  |  |  |   | Item |  | Item |  | Item |                |||  |
+|  |  |  |   +------+  +------+  +------+                |||  |
+|  |  |  +-----------------------------------------------+||  |
+|  |  +---------------------------------------------------+|  |
+|  +-------------------------------------------------------+  |
+|                                                             |
+|  Physical Partitions: Automatic, managed by Cosmos DB      |
++-------------------------------------------------------------+
 ```
 
 ## Partition Key
@@ -134,7 +134,7 @@ Container-level: Dedicated to single container
 | **Eventual** | No ordering guarantees | Lowest | Highest |
 
 ```
-Strong ← Bounded Staleness ← Session ← Consistent Prefix ← Eventual
+Strong <- Bounded Staleness <- Session <- Consistent Prefix <- Eventual
 (Strongest)                                                (Weakest)
 
 Default: Session (good balance)
@@ -144,13 +144,13 @@ Most common: Session or Eventual
 ## Global Distribution
 
 ```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  East US    │◄──►│  West US    │◄──►│  Europe     │
-│  (Primary)  │    │  (Replica)  │    │  (Replica)  │
-└─────────────┘    └─────────────┘    └─────────────┘
-       │                  │                  │
-       └──────────────────┼──────────────────┘
-                          │
++-------------+    +-------------+    +-------------+
+|  East US    |<-->|  West US    |<-->|  Europe     |
+|  (Primary)  |    |  (Replica)  |    |  (Replica)  |
++-------------+    +-------------+    +-------------+
+       |                  |                  |
+       +------------------+------------------+
+                          |
               Multi-master writes or
               Single-write with failover
 ```
@@ -202,11 +202,11 @@ Stream of changes to process in real-time.
 
 ```
 Container
-    │
-    ▼
-Change Feed ──► Azure Functions
-            ──► Stream processing
-            ──► Event-driven architecture
+    |
+    v
+Change Feed --> Azure Functions
+            --> Stream processing
+            --> Event-driven architecture
 ```
 
 ```csharp

@@ -28,18 +28,18 @@ Image and video analysis.
 ### Capabilities
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Rekognition                                │
-│                                                                 │
-│  Image Analysis                    Video Analysis               │
-│  ├── Object/Scene detection        ├── People tracking          │
-│  ├── Face detection/comparison     ├── Face search              │
-│  ├── Celebrity recognition         ├── Path tracking            │
-│  ├── Text in images (OCR)          ├── Activity detection       │
-│  ├── Content moderation            ├── Segment detection        │
-│  └── Custom labels                 └── Content moderation       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                      Rekognition                                |
+|                                                                 |
+|  Image Analysis                    Video Analysis               |
+|  +-- Object/Scene detection        +-- People tracking          |
+|  +-- Face detection/comparison     +-- Face search              |
+|  +-- Celebrity recognition         +-- Path tracking            |
+|  +-- Text in images (OCR)          +-- Activity detection       |
+|  +-- Content moderation            +-- Segment detection        |
+|  +-- Custom labels                 +-- Content moderation       |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Face Detection
@@ -77,7 +77,7 @@ for match in response['FaceMatches']:
 Train custom object detection models.
 
 ```
-Your Images → Label → Train → Deploy → Detect custom objects
+Your Images -> Label -> Train -> Deploy -> Detect custom objects
 ```
 
 ### Content Moderation
@@ -99,26 +99,26 @@ Extract text, forms, and tables from documents.
 ### Capabilities
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Textract                                 │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Detect     │  │   Analyze    │  │   Analyze    │          │
-│  │   Text       │  │   Document   │  │   Expense    │          │
-│  │              │  │              │  │              │          │
-│  │  Raw text    │  │  Forms +     │  │  Receipts +  │          │
-│  │  extraction  │  │  Tables      │  │  Invoices    │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐                            │
-│  │   Analyze    │  │   Lending    │                            │
-│  │   ID         │  │   Document   │                            │
-│  │              │  │              │                            │
-│  │  Passports,  │  │  Mortgage,   │                            │
-│  │  Driver lic  │  │  loan docs   │                            │
-│  └──────────────┘  └──────────────┘                            │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        Textract                                 |
+|                                                                 |
+|  +--------------+  +--------------+  +--------------+          |
+|  |   Detect     |  |   Analyze    |  |   Analyze    |          |
+|  |   Text       |  |   Document   |  |   Expense    |          |
+|  |              |  |              |  |              |          |
+|  |  Raw text    |  |  Forms +     |  |  Receipts +  |          |
+|  |  extraction  |  |  Tables      |  |  Invoices    |          |
+|  +--------------+  +--------------+  +--------------+          |
+|                                                                 |
+|  +--------------+  +--------------+                            |
+|  |   Analyze    |  |   Lending    |                            |
+|  |   ID         |  |   Document   |                            |
+|  |              |  |              |                            |
+|  |  Passports,  |  |  Mortgage,   |                            |
+|  |  Driver lic  |  |  loan docs   |                            |
+|  +--------------+  +--------------+                            |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Document Analysis
@@ -274,20 +274,20 @@ Speech to text.
 ### Features
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                       Transcribe                                │
-│                                                                 │
-│  ├── Real-time streaming                                       │
-│  ├── Batch transcription                                       │
-│  ├── Speaker identification (up to 10)                         │
-│  ├── Channel identification (call centers)                     │
-│  ├── Custom vocabulary                                         │
-│  ├── Automatic language detection                              │
-│  ├── PII redaction                                             │
-│  ├── Toxicity detection                                        │
-│  └── Subtitles (SRT, VTT)                                      │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                       Transcribe                                |
+|                                                                 |
+|  +-- Real-time streaming                                       |
+|  +-- Batch transcription                                       |
+|  +-- Speaker identification (up to 10)                         |
+|  +-- Channel identification (call centers)                     |
+|  +-- Custom vocabulary                                         |
+|  +-- Automatic language detection                              |
+|  +-- PII redaction                                             |
+|  +-- Toxicity detection                                        |
+|  +-- Subtitles (SRT, VTT)                                      |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Batch Transcription
@@ -398,24 +398,24 @@ Conversational AI for chatbots.
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                          Lex Bot                                │
-│                                                                 │
-│   User: "I want to book a flight to London"                    │
-│                     │                                           │
-│                     ▼                                           │
-│   ┌─────────────────────────────────────────┐                  │
-│   │              Intent: BookFlight          │                  │
-│   │                                          │                  │
-│   │  Slots:                                  │                  │
-│   │  ├── destination: London                │                  │
-│   │  ├── departure_date: (ask user)         │                  │
-│   │  └── return_date: (ask user)            │                  │
-│   │                                          │                  │
-│   │  Fulfillment: Lambda function            │                  │
-│   └─────────────────────────────────────────┘                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                          Lex Bot                                |
+|                                                                 |
+|   User: "I want to book a flight to London"                    |
+|                     |                                           |
+|                     v                                           |
+|   +-----------------------------------------+                  |
+|   |              Intent: BookFlight          |                  |
+|   |                                          |                  |
+|   |  Slots:                                  |                  |
+|   |  +-- destination: London                |                  |
+|   |  +-- departure_date: (ask user)         |                  |
+|   |  +-- return_date: (ask user)            |                  |
+|   |                                          |                  |
+|   |  Fulfillment: Lambda function            |                  |
+|   +-----------------------------------------+                  |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Integrations
@@ -437,28 +437,28 @@ Conversational AI for chatbots.
 Intelligent enterprise search.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Kendra Index                             │
-│                                                                 │
-│   Data Sources:                                                 │
-│   ├── S3                                                       │
-│   ├── SharePoint                                               │
-│   ├── Salesforce                                               │
-│   ├── ServiceNow                                               │
-│   ├── Databases                                                │
-│   └── Custom connectors                                        │
-│                                                                 │
-│   Query: "What is our vacation policy?"                        │
-│                     │                                           │
-│                     ▼                                           │
-│   ┌─────────────────────────────────────────┐                  │
-│   │  Results:                                │                  │
-│   │  1. [Answer] Employees get 20 days...   │                  │
-│   │  2. [Document] HR_Vacation_Policy.pdf   │                  │
-│   │  3. [FAQ] Common vacation questions     │                  │
-│   └─────────────────────────────────────────┘                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        Kendra Index                             |
+|                                                                 |
+|   Data Sources:                                                 |
+|   +-- S3                                                       |
+|   +-- SharePoint                                               |
+|   +-- Salesforce                                               |
+|   +-- ServiceNow                                               |
+|   +-- Databases                                                |
+|   +-- Custom connectors                                        |
+|                                                                 |
+|   Query: "What is our vacation policy?"                        |
+|                     |                                           |
+|                     v                                           |
+|   +-----------------------------------------+                  |
+|   |  Results:                                |                  |
+|   |  1. [Answer] Employees get 20 days...   |                  |
+|   |  2. [Document] HR_Vacation_Policy.pdf   |                  |
+|   |  3. [FAQ] Common vacation questions     |                  |
+|   +-----------------------------------------+                  |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Features
@@ -476,23 +476,23 @@ Intelligent enterprise search.
 Real-time personalization and recommendations.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Personalize                                │
-│                                                                 │
-│   1. Import Data                                               │
-│      ├── User interactions (clicks, purchases)                 │
-│      ├── User metadata                                         │
-│      └── Item metadata                                         │
-│                                                                 │
-│   2. Create Solution                                           │
-│      └── Recipe: User-Personalization, Similar-Items, etc.     │
-│                                                                 │
-│   3. Deploy Campaign                                           │
-│      └── Real-time recommendations API                         │
-│                                                                 │
-│   API: GetRecommendations(userId) → [item1, item2, ...]        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                      Personalize                                |
+|                                                                 |
+|   1. Import Data                                               |
+|      +-- User interactions (clicks, purchases)                 |
+|      +-- User metadata                                         |
+|      +-- Item metadata                                         |
+|                                                                 |
+|   2. Create Solution                                           |
+|      +-- Recipe: User-Personalization, Similar-Items, etc.     |
+|                                                                 |
+|   3. Deploy Campaign                                           |
+|      +-- Real-time recommendations API                         |
+|                                                                 |
+|   API: GetRecommendations(userId) -> [item1, item2, ...]        |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Recipes
@@ -509,17 +509,17 @@ Real-time personalization and recommendations.
 Time series forecasting.
 
 ```
-Historical Data → Forecast → Predictions
-(sales, demand,     │
- traffic, etc.)     │
-                    ▼
-              ┌──────────┐
-              │ Forecast │
-              │          │
-              │ P10 ─────│─── Lower bound
-              │ P50 ─────│─── Most likely
-              │ P90 ─────│─── Upper bound
-              └──────────┘
+Historical Data -> Forecast -> Predictions
+(sales, demand,     |
+ traffic, etc.)     |
+                    v
+              +----------+
+              | Forecast |
+              |          |
+              | P10 -----|--- Lower bound
+              | P50 -----|--- Most likely
+              | P90 -----|--- Upper bound
+              +----------+
 ```
 
 ### AutoML

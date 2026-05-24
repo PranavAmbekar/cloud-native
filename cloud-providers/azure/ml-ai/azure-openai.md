@@ -43,27 +43,27 @@ Azure OpenAI Service provides REST API access to OpenAI's powerful language mode
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Azure OpenAI Service                          │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                    Resource                               │   │
-│  │                                                           │   │
-│  │   ┌─────────────────┐  ┌─────────────────┐              │   │
-│  │   │   Deployment    │  │   Deployment    │              │   │
-│  │   │   "gpt4-prod"   │  │   "gpt35-dev"   │              │   │
-│  │   │   (gpt-4)       │  │   (gpt-35-turbo)│              │   │
-│  │   └─────────────────┘  └─────────────────┘              │   │
-│  │                                                           │   │
-│  │   ┌─────────────────┐  ┌─────────────────┐              │   │
-│  │   │   Deployment    │  │   Deployment    │              │   │
-│  │   │   "embeddings"  │  │   "dalle"       │              │   │
-│  │   │   (ada-002)     │  │   (dall-e-3)    │              │   │
-│  │   └─────────────────┘  └─────────────────┘              │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│   Endpoint: https://myresource.openai.azure.com                 │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                    Azure OpenAI Service                          |
+|                                                                  |
+|  +---------------------------------------------------------+    |
+|  |                    Resource                             |    |
+|  |                                                         |    |
+|  |   +-----------------+  +-----------------+              |    |
+|  |   |   Deployment    |  |   Deployment    |              |    |
+|  |   |   "gpt4-prod"   |  |   "gpt35-dev"   |              |    |
+|  |   |   (gpt-4)       |  |   (gpt-35-turbo)|              |    |
+|  |   +-----------------+  +-----------------+              |    |
+|  |                                                         |    |
+|  |   +-----------------+  +-----------------+              |    |
+|  |   |   Deployment    |  |   Deployment    |              |    |
+|  |   |   "embeddings"  |  |   "dalle"       |              |    |
+|  |   |   (ada-002)     |  |   (dall-e-3)    |              |    |
+|  |   +-----------------+  +-----------------+              |    |
+|  +---------------------------------------------------------+    |
+|                                                                  |
+|   Endpoint: https://myresource.openai.azure.com                  |
++------------------------------------------------------------------+
 ```
 
 ## Create Resource and Deployment
@@ -250,9 +250,9 @@ response.choices[0].content_filter_results = {
 
 ```
 Quota allocation:
-├── GPT-4: 10,000 TPM (default, can increase)
-├── GPT-35-Turbo: 120,000 TPM
-└── Embeddings: 120,000 TPM
++-- GPT-4: 10,000 TPM (default, can increase)
++-- GPT-35-Turbo: 120,000 TPM
++-- Embeddings: 120,000 TPM
 
 Rate limiting headers:
 x-ratelimit-remaining-tokens
@@ -263,15 +263,15 @@ x-ratelimit-remaining-requests
 
 ```
 Standard (Pay-as-you-go):
-├── Shared capacity
-├── Variable latency
-└── Best for: Dev/test, variable workloads
++-- Shared capacity
++-- Variable latency
++-- Best for: Dev/test, variable workloads
 
 Provisioned (PTU):
-├── Reserved capacity
-├── Consistent latency
-├── Best for: Production, predictable workloads
-└── Billing: Per provisioned throughput unit/hour
++-- Reserved capacity
++-- Consistent latency
++-- Best for: Production, predictable workloads
++-- Billing: Per provisioned throughput unit/hour
 ```
 
 ## On Your Data

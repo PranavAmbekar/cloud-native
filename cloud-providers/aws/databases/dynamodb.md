@@ -25,28 +25,28 @@
 
 **Partition Key Only**
 ```
-┌─────────────────────────────────────┐
-│ Table: Users                        │
-├─────────────┬───────────────────────┤
-│ user_id(PK) │ name  │ email         │
-├─────────────┼───────┼───────────────┤
-│ u001        │ Alice │ alice@ex.com  │
-│ u002        │ Bob   │ bob@ex.com    │
-└─────────────┴───────┴───────────────┘
++-------------------------------------+
+| Table: Users                        |
++-------------+-----------------------+
+| user_id(PK) | name  | email         |
++-------------+-------+---------------+
+| u001        | Alice | alice@ex.com  |
+| u002        | Bob   | bob@ex.com    |
++-------------+-------+---------------+
 ```
 
 **Partition Key + Sort Key (Composite)**
 ```
-┌──────────────────────────────────────────────────┐
-│ Table: Orders                                    │
-├───────────┬─────────────┬────────┬───────────────┤
-│ user_id   │ order_date  │ total  │ status        │
-│ (PK)      │ (SK)        │        │               │
-├───────────┼─────────────┼────────┼───────────────┤
-│ u001      │ 2024-01-01  │ 150.00 │ shipped       │
-│ u001      │ 2024-01-15  │ 75.00  │ delivered     │
-│ u002      │ 2024-01-10  │ 200.00 │ processing    │
-└───────────┴─────────────┴────────┴───────────────┘
++--------------------------------------------------+
+| Table: Orders                                    |
++-----------+-------------+--------+---------------+
+| user_id   | order_date  | total  | status        |
+| (PK)      | (SK)        |        |               |
++-----------+-------------+--------+---------------+
+| u001      | 2024-01-01  | 150.00 | shipped       |
+| u001      | 2024-01-15  | 75.00  | delivered     |
+| u002      | 2024-01-10  | 200.00 | processing    |
++-----------+-------------+--------+---------------+
 ```
 
 ---
@@ -96,7 +96,7 @@ Writes:
 ```
 Base Table: PK=user_id, SK=order_date
 GSI: PK=status, SK=order_date
-→ Query all orders by status
+-> Query all orders by status
 ```
 
 ### Local Secondary Index (LSI)
@@ -109,7 +109,7 @@ GSI: PK=status, SK=order_date
 ```
 Base Table: PK=user_id, SK=order_date
 LSI: PK=user_id, SK=status
-→ Query user's orders by status
+-> Query user's orders by status
 ```
 
 ### Index Comparison
@@ -176,17 +176,17 @@ response = table.get_item(
 Capture item-level changes in real-time.
 
 ```
-┌─────────┐    ┌─────────┐    ┌─────────┐
-│ DynamoDB│───▶│ Stream  │───▶│ Lambda  │
-│  Table  │    │         │    │         │
-└─────────┘    └─────────┘    └─────────┘
-                    │
-                    ▼
-              ┌─────────┐
-              │ Kinesis │
-              │  Data   │
-              │ Firehose│
-              └─────────┘
++---------+    +---------+    +---------+
+| DynamoDB|--->| Stream  |--->| Lambda  |
+|  Table  |    |         |    |         |
++---------+    +---------+    +---------+
+                    |
+                    v
+              +---------+
+              | Kinesis |
+              |  Data   |
+              | Firehose|
+              +---------+
 ```
 
 ### Stream View Types
@@ -210,12 +210,12 @@ Capture item-level changes in real-time.
 Multi-region, multi-active replication.
 
 ```
-┌──────────────┐        ┌──────────────┐
-│  us-east-1   │◄──────▶│  eu-west-1   │
-│   (active)   │  Sync  │   (active)   │
-└──────────────┘        └──────────────┘
-        ▲                      ▲
-        │                      │
++--------------+        +--------------+
+|  us-east-1   |<------>|  eu-west-1   |
+|   (active)   |  Sync  |   (active)   |
++--------------+        +--------------+
+        ^                      ^
+        |                      |
     Writes/Reads           Writes/Reads
 ```
 
@@ -233,10 +233,10 @@ Multi-region, multi-active replication.
 In-memory cache for DynamoDB.
 
 ```
-┌─────────┐    ┌─────────┐    ┌─────────┐
-│  App    │───▶│   DAX   │───▶│DynamoDB │
-│         │    │ Cluster │    │         │
-└─────────┘    └─────────┘    └─────────┘
++---------+    +---------+    +---------+
+|  App    |--->|   DAX   |--->|DynamoDB |
+|         |    | Cluster |    |         |
++---------+    +---------+    +---------+
                  (cache)
 ```
 

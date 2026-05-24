@@ -53,9 +53,9 @@
 
 ### Synchronous
 ```
-Client → Lambda → Response
-         ↓
-      Waits for completion
+Client -> Lambda -> Response
+            |
+         Waits for completion
 ```
 - API Gateway, ALB, Cognito
 - Client waits for response
@@ -63,9 +63,9 @@ Client → Lambda → Response
 
 ### Asynchronous
 ```
-Client → Lambda → 202 Accepted
-              ↓
-         Queued for processing
+Client -> Lambda -> 202 Accepted
+               |
+          Queued for processing
 ```
 - S3, SNS, EventBridge, CloudWatch Events
 - Automatic retry (2 retries)
@@ -73,7 +73,7 @@ Client → Lambda → 202 Accepted
 
 ### Event Source Mapping
 ```
-Source → Lambda polls → Processes batches
+Source -> Lambda polls -> Processes batches
 (SQS, Kinesis, DynamoDB Streams)
 ```
 - Lambda polls the source
@@ -98,23 +98,23 @@ Source → Lambda polls → Processes batches
 ## Execution Environment
 
 ```
-┌─────────────────────────────────────────┐
-│         Execution Environment           │
-│  ┌───────────────────────────────────┐  │
-│  │         /tmp (ephemeral)          │  │
-│  │         512 MB - 10 GB            │  │
-│  └───────────────────────────────────┘  │
-│  ┌───────────────────────────────────┐  │
-│  │         Runtime                   │  │
-│  │    ┌─────────────────────────┐    │  │
-│  │    │     Your Function       │    │  │
-│  │    │    Code + Layers        │    │  │
-│  │    └─────────────────────────┘    │  │
-│  └───────────────────────────────────┘  │
-└─────────────────────────────────────────┘
-     │
-     │ Reused for subsequent invocations
-     │ (warm start)
++------------------------------------------+
+|          Execution Environment           |
+|  +------------------------------------+  |
+|  |          /tmp (ephemeral)          |  |
+|  |          512 MB - 10 GB            |  |
+|  +------------------------------------+  |
+|  +------------------------------------+  |
+|  |            Runtime                 |  |
+|  |    +--------------------------+    |  |
+|  |    |      Your Function       |    |  |
+|  |    |     Code + Layers        |    |  |
+|  |    +--------------------------+    |  |
+|  +------------------------------------+  |
++------------------------------------------+
+     |
+     | Reused for subsequent invocations
+     | (warm start)
 ```
 
 ---
@@ -171,9 +171,9 @@ Reusable components containing libraries, custom runtimes, or dependencies.
 
 ```
 Function
-    ├── /opt/python (Python libraries)
-    ├── /opt/nodejs (Node.js modules)
-    └── /opt/bin (executables)
+    +-- /opt/python (Python libraries)
+    +-- /opt/nodejs (Node.js modules)
+    +-- /opt/bin (executables)
 ```
 
 ```bash
@@ -231,22 +231,22 @@ def handler(event, context):
 ## VPC Integration
 
 ```
-┌─────────────────────────────────────┐
-│              VPC                    │
-│  ┌─────────────────────────────┐   │
-│  │      Private Subnet         │   │
-│  │  ┌───────┐    ┌─────────┐  │   │
-│  │  │Lambda │────│   RDS   │  │   │
-│  │  │ (ENI) │    └─────────┘  │   │
-│  │  └───────┘                  │   │
-│  └─────────────────────────────┘   │
-│               │                     │
-│               ▼                     │
-│  ┌─────────────────────────────┐   │
-│  │      NAT Gateway            │   │ → Internet
-│  │   (for internet access)     │   │
-│  └─────────────────────────────┘   │
-└─────────────────────────────────────┘
++--------------------------------------+
+|               VPC                    |
+|  +--------------------------------+  |
+|  |       Private Subnet           |  |
+|  |  +---------+    +-----------+  |  |
+|  |  | Lambda  |----|    RDS    |  |  |
+|  |  |  (ENI)  |    +-----------+  |  |
+|  |  +---------+                   |  |
+|  +--------------------------------+  |
+|                |                     |
+|                v                     |
+|  +--------------------------------+  |
+|  |        NAT Gateway             |  | -> Internet
+|  |    (for internet access)       |  |
+|  +--------------------------------+  |
++--------------------------------------+
 ```
 
 - Required for accessing VPC resources (RDS, ElastiCache)
@@ -312,13 +312,13 @@ def handler(event, context):
 
 ### Dead Letter Queue (DLQ)
 ```
-Failed async invocation → DLQ (SQS or SNS)
+Failed async invocation -> DLQ (SQS or SNS)
 ```
 
 ### Destinations
 ```
-Success → SQS, SNS, Lambda, EventBridge
-Failure → SQS, SNS, Lambda, EventBridge
+Success -> SQS, SNS, Lambda, EventBridge
+Failure -> SQS, SNS, Lambda, EventBridge
 ```
 
 ---
@@ -415,27 +415,27 @@ Example: 1M requests, 1GB memory, 500ms avg
 
 ### API Backend
 ```
-API Gateway → Lambda → DynamoDB
+API Gateway -> Lambda -> DynamoDB
 ```
 
 ### Event Processing
 ```
-S3 Upload → Lambda → Process → Store in DynamoDB
+S3 Upload -> Lambda -> Process -> Store in DynamoDB
 ```
 
 ### Scheduled Tasks
 ```
-EventBridge (cron) → Lambda → Cleanup/Reports
+EventBridge (cron) -> Lambda -> Cleanup/Reports
 ```
 
 ### Stream Processing
 ```
-Kinesis/DynamoDB Streams → Lambda → Transform → S3/Redshift
+Kinesis/DynamoDB Streams -> Lambda -> Transform -> S3/Redshift
 ```
 
 ### Fan-out
 ```
-SNS → Lambda (multiple subscribers)
+SNS -> Lambda (multiple subscribers)
 ```
 
 ---

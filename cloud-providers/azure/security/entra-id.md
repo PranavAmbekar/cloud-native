@@ -35,30 +35,30 @@ Microsoft Entra ID is a cloud-based identity and access management (IAM) service
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Microsoft Entra ID Tenant                     │
-│                                                                  │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │                     Directory                               │ │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌──────────────┐ │ │
-│  │  │  Users  │  │ Groups  │  │  Apps   │  │   Devices    │ │ │
-│  │  └─────────┘  └─────────┘  └─────────┘  └──────────────┘ │ │
-│  └───────────────────────────────────────────────────────────┘ │
-│                              │                                   │
-│  ┌───────────────────────────▼───────────────────────────────┐ │
-│  │                     Features                                │ │
-│  │  • Authentication (SSO, MFA)                               │ │
-│  │  • Conditional Access                                       │ │
-│  │  • Identity Protection                                      │ │
-│  │  • Privileged Identity Management                          │ │
-│  └───────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-          │                    │                    │
-          ▼                    ▼                    ▼
-    ┌──────────┐        ┌──────────┐        ┌──────────┐
-    │  Azure   │        │ Microsoft│        │  Custom  │
-    │ Portal   │        │   365    │        │   Apps   │
-    └──────────┘        └──────────┘        └──────────┘
++-------------------------------------------------------------------+
+|                    Microsoft Entra ID Tenant                      |
+|                                                                   |
+|  +-------------------------------------------------------------+  |
+|  |                     Directory                               |  |
+|  |  +---------+  +---------+  +---------+  +--------------+    |  |
+|  |  |  Users  |  | Groups  |  |  Apps   |  |   Devices    |    |  |
+|  |  +---------+  +---------+  +---------+  +--------------+    |  |
+|  +-------------------------------------------------------------+  |
+|                              |                                    |
+|  +---------------------------v-----------------------------+      |
+|  |                     Features                            |      |
+|  |  - Authentication (SSO, MFA)                            |      |
+|  |  - Conditional Access                                   |      |
+|  |  - Identity Protection                                  |      |
+|  |  - Privileged Identity Management                       |      |
+|  +----------------------------------------------------------+     |
++-------------------------------------------------------------------+
+          |                    |                    |
+          v                    v                    v
+    +----------+        +----------+        +----------+
+    |  Azure   |        | Microsoft|        |  Custom  |
+    | Portal   |        |   365    |        |   Apps   |
+    +----------+        +----------+        +----------+
 ```
 
 ## User Types
@@ -130,16 +130,16 @@ az ad user invite \
 
 ```
 Authorization Code Flow (Web apps):
-User → App → Entra ID → Authorization Code → App → Token
+User -> App -> Entra ID -> Authorization Code -> App -> Token
 
 Client Credentials (Service-to-service):
-App → Entra ID → Access Token → API
+App -> Entra ID -> Access Token -> API
 
 Device Code (CLI/IoT):
-App → Device Code → User authenticates → App polls → Token
+App -> Device Code -> User authenticates -> App polls -> Token
 
 ROPC (Legacy - avoid):
-App + Username/Password → Token (Not recommended)
+App + Username/Password -> Token (Not recommended)
 ```
 
 ### Register Application
@@ -201,14 +201,14 @@ az vm identity assign \
 
 ```
 IF:                          THEN:
-├── Users/Groups             ├── Allow
-├── Cloud apps               │   └── Require MFA
-├── Conditions               │   └── Require device compliance
-│   ├── Sign-in risk         │   └── Require app protection
-│   ├── Device platforms     └── Block
-│   ├── Locations
-│   ├── Client apps
-│   └── Device state
+|-- Users/Groups             |-- Allow
+|-- Cloud apps               |   +-- Require MFA
+|-- Conditions               |   +-- Require device compliance
+|   |-- Sign-in risk         |   +-- Require app protection
+|   |-- Device platforms     +-- Block
+|   |-- Locations
+|   |-- Client apps
+|   +-- Device state
 ```
 
 ### Common Policies
@@ -284,15 +284,15 @@ Just-in-time privileged access.
 
 ```
 Standard RBAC:                     PIM:
-User ─── Always Admin Role         User ─── Eligible for Role
-                                            │
-                                            ▼ Activate (justification)
-                                            │
-                                   User ─── Active Role (time-limited)
-                                            │
-                                            ▼ Expires
-                                            │
-                                   User ─── Eligible for Role
+User --- Always Admin Role         User --- Eligible for Role
+                                            |
+                                            v Activate (justification)
+                                            |
+                                   User --- Active Role (time-limited)
+                                            |
+                                            v Expires
+                                            |
+                                   User --- Eligible for Role
 ```
 
 ### PIM Settings
@@ -309,11 +309,11 @@ User ─── Always Admin Role         User ─── Eligible for Role
 
 ```
 Microsoft Entra ID                    Azure Resources
-┌─────────────────┐                   ┌─────────────────┐
-│     Users       │───Authentication──▶│  Subscriptions  │
-│     Groups      │                   │  Resource Groups│
-│   Applications  │───RBAC Roles──────▶│    Resources    │
-└─────────────────┘                   └─────────────────┘
++-----------------+                   +-----------------+
+|     Users       |---Authentication->|  Subscriptions  |
+|     Groups      |                   |  Resource Groups|
+|   Applications  |---RBAC Roles----->|    Resources    |
++-----------------+                   +-----------------+
 ```
 
 ### Role Assignment

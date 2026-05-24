@@ -18,22 +18,22 @@ Azure AI Services (formerly Cognitive Services) provides pre-built AI capabiliti
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Azure AI Services                             │
-│                                                                  │
-│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────────┐  │
-│  │  Vision   │ │  Speech   │ │ Language  │ │   Decision    │  │
-│  │           │ │           │ │           │ │               │  │
-│  │• Computer │ │• Speech   │ │• Language │ │• Content      │  │
-│  │  Vision   │ │  to Text  │ │  Service  │ │  Moderator    │  │
-│  │• Custom   │ │• Text to  │ │• Translator│ │• Personalizer│  │
-│  │  Vision   │ │  Speech   │ │• QnA Maker│ │• Anomaly      │  │
-│  │• Face     │ │• Speaker  │ │           │ │  Detector     │  │
-│  │• Document │ │  Recog    │ │           │ │               │  │
-│  └───────────┘ └───────────┘ └───────────┘ └───────────────┘  │
-│                              │                                   │
-│                     REST API / SDKs                             │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                    Azure AI Services                             |
+|                                                                  |
+|  +-----------+ +-----------+ +-----------+ +---------------+     |
+|  |  Vision   | |  Speech   | | Language  | |   Decision    |     |
+|  |           | |           | |           | |               |     |
+|  |* Computer | |* Speech   | |* Language | |* Content      |     |
+|  |  Vision   | |  to Text  | |  Service  | |  Moderator    |     |
+|  |* Custom   | |* Text to  | |* Translator| |* Personalizer|     |
+|  |  Vision   | |  Speech   | |* QnA Maker| |* Anomaly      |     |
+|  |* Face     | |* Speaker  | |           | |  Detector     |     |
+|  |* Document | |  Recog    | |           | |               |     |
+|  +-----------+ +-----------+ +-----------+ +---------------+     |
+|                              |                                   |
+|                     REST API / SDKs                              |
++------------------------------------------------------------------+
 ```
 
 ## Resource Types

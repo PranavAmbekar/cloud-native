@@ -81,16 +81,16 @@ Hyperscale:       2-128 vCores
 ### Serverless
 
 ```
-┌─────────────────────────────────────────────────┐
-│              Serverless Compute                  │
-│                                                  │
-│  Min vCores: 0.5 ─────────────▶ Max vCores: 16 │
-│                                                  │
-│  Auto-pause after: 1 hour (configurable)        │
-│  Resume time: ~1 minute                         │
-│                                                  │
-│  Billing: Per second of compute used            │
-└─────────────────────────────────────────────────┘
++-------------------------------------------------+
+|              Serverless Compute                 |
+|                                                 |
+|  Min vCores: 0.5 -------------> Max vCores: 16  |
+|                                                 |
+|  Auto-pause after: 1 hour (configurable)        |
+|  Resume time: ~1 minute                         |
+|                                                 |
+|  Billing: Per second of compute used            |
++-------------------------------------------------+
 ```
 
 ## High Availability
@@ -98,39 +98,39 @@ Hyperscale:       2-128 vCores
 ### General Purpose
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                 Compute (Stateless)                  │
-│  ┌─────┐  ┌─────┐  ┌─────┐                         │
-│  │ VM1 │  │ VM2 │  │ VM3 │  (Failover replicas)   │
-│  └──┬──┘  └──┬──┘  └──┬──┘                         │
-└─────┼───────┼───────┼───────────────────────────────┘
-      │       │       │
-      ▼       ▼       ▼
-┌─────────────────────────────────────────────────────┐
-│           Azure Premium Storage (LRS/ZRS)           │
-│              (Data + Logs + Backups)                │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|                 Compute (Stateless)                 |
+|  +-----+  +-----+  +-----+                          |
+|  | VM1 |  | VM2 |  | VM3 |  (Failover replicas)    |
+|  +--+--+  +--+--+  +--+--+                          |
++-----+-------+-------+-------------------------------+
+      |       |       |
+      v       v       v
++-----------------------------------------------------+
+|           Azure Premium Storage (LRS/ZRS)           |
+|              (Data + Logs + Backups)                |
++-----------------------------------------------------+
 ```
 
 ### Business Critical
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Always On Availability Group (synchronous)         │
-│  ┌─────────┐   ┌─────────┐   ┌─────────┐          │
-│  │Primary  │◄─►│Secondary│◄─►│Secondary│          │
-│  │(R/W)    │   │(standby)│   │(standby)│          │
-│  │+ Local  │   │+ Local  │   │+ Local  │          │
-│  │  SSD    │   │  SSD    │   │  SSD    │          │
-│  └─────────┘   └─────────┘   └─────────┘          │
-│       │                                             │
-│       └─────────────────────────────────────────┐  │
-│                                                  ▼  │
-│                              ┌──────────────────┐  │
-│                              │  Read Replica    │  │
-│                              │  (free, R/O)     │  │
-│                              └──────────────────┘  │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|  Always On Availability Group (synchronous)         |
+|  +---------+   +---------+   +---------+            |
+|  |Primary  |<->|Secondary|<->|Secondary|            |
+|  |(R/W)    |   |(standby)|   |(standby)|            |
+|  |+ Local  |   |+ Local  |   |+ Local  |            |
+|  |  SSD    |   |  SSD    |   |  SSD    |            |
+|  +---------+   +---------+   +---------+            |
+|       |                                             |
+|       +---------------------------------------------+
+|                                                  v  |
+|                              +------------------+   |
+|                              |  Read Replica    |   |
+|                              |  (free, R/O)     |   |
+|                              +------------------+   |
++-----------------------------------------------------+
 ```
 
 ## Elastic Pools
@@ -138,17 +138,17 @@ Hyperscale:       2-128 vCores
 Share resources across multiple databases.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│              Elastic Pool (500 eDTUs)               │
-│                                                      │
-│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐ │
-│  │ DB1  │  │ DB2  │  │ DB3  │  │ DB4  │  │ DB5  │ │
-│  │ 50   │  │ 200  │  │ 100  │  │ 50   │  │ 100  │ │
-│  │ eDTU │  │ eDTU │  │ eDTU │  │ eDTU │  │ eDTU │ │
-│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘ │
-│                                                      │
-│  Min eDTU per DB: 0    Max eDTU per DB: 250        │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|              Elastic Pool (500 eDTUs)               |
+|                                                     |
+|  +------+  +------+  +------+  +------+  +------+  |
+|  | DB1  |  | DB2  |  | DB3  |  | DB4  |  | DB5  |  |
+|  | 50   |  | 200  |  | 100  |  | 50   |  | 100  |  |
+|  | eDTU |  | eDTU |  | eDTU |  | eDTU |  | eDTU |  |
+|  +------+  +------+  +------+  +------+  +------+  |
+|                                                     |
+|  Min eDTU per DB: 0    Max eDTU per DB: 250         |
++-----------------------------------------------------+
 ```
 
 Use cases:
@@ -170,11 +170,11 @@ Use cases:
 
 ```
 Timeline:
-─────────────────────────────────────────────────▶
-   │      │      │              │              │
+--------------------------------------------->
+   |      |      |              |              |
   Full   Diff   Log            Log           Log
-   │                            ▲
-   └────────────────────────────┘
+   |                            ^
+   +----------------------------+
         Restore to any point
 ```
 
@@ -194,11 +194,11 @@ Yearly:  Keep 10 backups
 
 ```
 Primary (East US)              Secondary (West US)
-┌─────────────┐    async      ┌─────────────┐
-│   Database  │──────────────▶│  Read-only  │
-│    (R/W)    │  replication  │   replica   │
-└─────────────┘               └─────────────┘
-                                     │
++-------------+    async      +-------------+
+|   Database  |-------------->|  Read-only  |
+|    (R/W)    |  replication  |   replica   |
++-------------+               +-------------+
+                                     |
                               Can be promoted
                               to primary
 ```
@@ -206,20 +206,20 @@ Primary (East US)              Secondary (West US)
 ### Auto-Failover Groups
 
 ```
-┌────────────────────────────────────────────────────┐
-│              Failover Group                         │
-│                                                     │
-│  Primary Server          Secondary Server          │
-│  ┌──────────────┐       ┌──────────────┐          │
-│  │ Database 1   │──────▶│ Database 1   │          │
-│  │ Database 2   │──────▶│ Database 2   │          │
-│  │ Database 3   │──────▶│ Database 3   │          │
-│  └──────────────┘       └──────────────┘          │
-│                                                     │
-│  Listener: <group-name>.database.windows.net       │
-│  R/W: <group-name>.database.windows.net            │
-│  R/O: <group-name>.secondary.database.windows.net  │
-└────────────────────────────────────────────────────┘
++----------------------------------------------------+
+|              Failover Group                        |
+|                                                    |
+|  Primary Server          Secondary Server          |
+|  +--------------+       +--------------+           |
+|  | Database 1   |------>| Database 1   |           |
+|  | Database 2   |------>| Database 2   |           |
+|  | Database 3   |------>| Database 3   |           |
+|  +--------------+       +--------------+           |
+|                                                    |
+|  Listener: <group-name>.database.windows.net       |
+|  R/W: <group-name>.database.windows.net            |
+|  R/O: <group-name>.secondary.database.windows.net  |
++----------------------------------------------------+
 ```
 
 ## Security
@@ -274,9 +274,9 @@ ALTER COLUMN SSN ADD MASKED WITH (FUNCTION = 'partial(0,"XXX-XX-",4)');
 
 ```
 Top Resource Consuming Queries
-├── Query 1: 45% DTU
-├── Query 2: 23% DTU
-└── Query 3: 12% DTU
++-- Query 1: 45% DTU
++-- Query 2: 23% DTU
++-- Query 3: 12% DTU
 
 Recommendations:
 - Add index on Column X

@@ -98,23 +98,23 @@ az keyvault certificate import \
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Azure Key Vault                           │
-│                                                                  │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │     Secrets     │  │      Keys       │  │  Certificates   │ │
-│  │                 │  │                 │  │                 │ │
-│  │ • Passwords     │  │ • RSA           │  │ • SSL/TLS       │ │
-│  │ • Conn strings  │  │ • EC            │  │ • Code signing  │ │
-│  │ • API keys      │  │ • HSM-backed    │  │ • Auto-renewal  │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-│                              │                                   │
-│                     Access Control                              │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  RBAC              │   Access Policies    │   Network     │ │
-│  │  (Recommended)     │   (Legacy)           │   Rules       │ │
-│  └───────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------+
+|                        Azure Key Vault                            |
+|                                                                   |
+|  +-----------------+  +-----------------+  +-----------------+    |
+|  |     Secrets     |  |      Keys       |  |  Certificates   |    |
+|  |                 |  |                 |  |                 |    |
+|  | - Passwords     |  | - RSA           |  | - SSL/TLS       |    |
+|  | - Conn strings  |  | - EC            |  | - Code signing  |    |
+|  | - API keys      |  | - HSM-backed    |  | - Auto-renewal  |    |
+|  +-----------------+  +-----------------+  +-----------------+    |
+|                              |                                    |
+|                     Access Control                                |
+|  +-------------------------------------------------------------+  |
+|  |  RBAC              |   Access Policies    |   Network      |  |
+|  |  (Recommended)     |   (Legacy)           |   Rules        |  |
+|  +-------------------------------------------------------------+  |
++-------------------------------------------------------------------+
 ```
 
 ## Access Control
@@ -189,12 +189,12 @@ az keyvault update \
 ## Soft Delete & Purge Protection
 
 ```
-Delete → Soft Deleted State → Purge (Permanent Delete)
-              │                        ↑
-              │    Retention Period    │
-              │      (7-90 days)       │
-              │                        │
-              └──── Can Recover ───────┘
+Delete -> Soft Deleted State -> Purge (Permanent Delete)
+              |                        ^
+              |    Retention Period    |
+              |      (7-90 days)       |
+              |                        |
+              +---- Can Recover -------+
 
 Purge Protection: Cannot purge during retention (even owner)
 ```
@@ -290,12 +290,12 @@ print(secret.value)
 
 ```
 Certificate Policy:
-├── Issuer: Self-signed / DigiCert / GlobalSign
-├── Subject: CN=myapp.example.com
-├── Validity: 12 months
-├── Key Type: RSA 2048
-└── Lifetime Actions:
-    └── Auto-renew at 80% of lifetime
+|-- Issuer: Self-signed / DigiCert / GlobalSign
+|-- Subject: CN=myapp.example.com
+|-- Validity: 12 months
+|-- Key Type: RSA 2048
++-- Lifetime Actions:
+    +-- Auto-renew at 80% of lifetime
 ```
 
 ### Integration with Services

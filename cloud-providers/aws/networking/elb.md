@@ -31,26 +31,26 @@
 ### Architecture
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│                           ALB                               │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │                   Listener (443)                     │   │
-│  │                                                      │   │
-│  │   Rule: /api/*     ──────▶  Target Group: API       │   │
-│  │   Rule: /images/*  ──────▶  Target Group: Static    │   │
-│  │   Rule: Host=m.*   ──────▶  Target Group: Mobile    │   │
-│  │   Default          ──────▶  Target Group: Web       │   │
-│  │                                                      │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-└────────────────────────────────────────────────────────────┘
-           │              │               │
-           ▼              ▼               ▼
-      ┌────────┐    ┌────────┐     ┌────────┐
-      │  EC2   │    │  EC2   │     │  ECS   │
-      │Targets │    │Targets │     │Targets │
-      └────────┘    └────────┘     └────────┘
++------------------------------------------------------------+
+|                           ALB                              |
+|                                                            |
+|  +-----------------------------------------------------+   |
+|  |                   Listener (443)                    |   |
+|  |                                                     |   |
+|  |   Rule: /api/*     ------>  Target Group: API       |   |
+|  |   Rule: /images/*  ------>  Target Group: Static    |   |
+|  |   Rule: Host=m.*   ------>  Target Group: Mobile    |   |
+|  |   Default          ------>  Target Group: Web       |   |
+|  |                                                     |   |
+|  +-----------------------------------------------------+   |
+|                                                            |
++------------------------------------------------------------+
+           |              |               |
+           v              v               v
+      +--------+    +--------+     +--------+
+      |  EC2   |    |  EC2   |     |  ECS   |
+      |Targets |    |Targets |     |Targets |
+      +--------+    +--------+     +--------+
 ```
 
 ### Routing Rules
@@ -88,21 +88,21 @@ Priority | Condition                  | Action
 ### Architecture
 
 ```
-┌────────────────────────────────────────────────┐
-│                      NLB                        │
-│                                                 │
-│   ┌─────────────────────────────────────────┐  │
-│   │         Listener (TCP:443)              │  │
-│   │                 │                       │  │
-│   │                 ▼                       │  │
-│   │         Target Group                    │  │
-│   │     (TCP health checks)                 │  │
-│   └─────────────────────────────────────────┘  │
-│                                                 │
-│   Static IP: 1.2.3.4 (AZ-a)                    │
-│   Static IP: 5.6.7.8 (AZ-b)                    │
-│                                                 │
-└────────────────────────────────────────────────┘
++------------------------------------------------+
+|                      NLB                       |
+|                                                |
+|   +-----------------------------------------+  |
+|   |         Listener (TCP:443)              |  |
+|   |                 |                       |  |
+|   |                 v                       |  |
+|   |         Target Group                    |  |
+|   |     (TCP health checks)                 |  |
+|   +-----------------------------------------+  |
+|                                                |
+|   Static IP: 1.2.3.4 (AZ-a)                    |
+|   Static IP: 5.6.7.8 (AZ-b)                    |
+|                                                |
++------------------------------------------------+
 ```
 
 ### Target Types
@@ -132,12 +132,12 @@ Use case: Need static IP with advanced routing.
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│   Traffic  ──▶  GLB  ──▶  Appliances  ──▶  GLB  ──▶  App   │
-│                           (inspect)                         │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                                                             |
+|   Traffic  -->  GLB  -->  Appliances  -->  GLB  -->  App    |
+|                           (inspect)                         |
+|                                                             |
++-------------------------------------------------------------+
 ```
 
 ---
@@ -148,21 +148,21 @@ Use case: Need static IP with advanced routing.
 
 ```
 Target Group
-    │
-    ├── Health Check Settings
-    │   ├── Protocol: HTTP
-    │   ├── Path: /health
-    │   ├── Port: traffic-port
-    │   ├── Healthy threshold: 2
-    │   ├── Unhealthy threshold: 3
-    │   ├── Timeout: 5 seconds
-    │   ├── Interval: 30 seconds
-    │   └── Success codes: 200-299
-    │
-    └── Targets
-        ├── EC2: i-xxx (healthy)
-        ├── EC2: i-yyy (healthy)
-        └── EC2: i-zzz (unhealthy - removed from rotation)
+    |
+    +-- Health Check Settings
+    |   +-- Protocol: HTTP
+    |   +-- Path: /health
+    |   +-- Port: traffic-port
+    |   +-- Healthy threshold: 2
+    |   +-- Unhealthy threshold: 3
+    |   +-- Timeout: 5 seconds
+    |   +-- Interval: 30 seconds
+    |   +-- Success codes: 200-299
+    |
+    +-- Targets
+        +-- EC2: i-xxx (healthy)
+        +-- EC2: i-yyy (healthy)
+        +-- EC2: i-zzz (unhealthy - removed from rotation)
 ```
 
 ### Target States
@@ -204,16 +204,16 @@ Set-Cookie: AWSALB=xxx; Expires=...; Path=/
 
 ```
 Without Cross-Zone:              With Cross-Zone:
-┌──────────┐  ┌──────────┐      ┌──────────┐  ┌──────────┐
-│   AZ-a   │  │   AZ-b   │      │   AZ-a   │  │   AZ-b   │
-│          │  │          │      │          │  │          │
-│ 50% each │  │ 50% each │      │ 25% each │  │ 25% each │
-│   ┌─┐    │  │   ┌─┐    │      │   ┌─┐    │  │   ┌─┐    │
-│   │1│    │  │   │3│    │      │   │1│    │  │   │3│    │
-│   └─┘    │  │   │4│    │      │   └─┘    │  │   │4│    │
-│          │  │   │5│    │      │          │  │   │5│    │
-│          │  │   │6│    │      │          │  │   │6│    │
-└──────────┘  └──────────┘      └──────────┘  └──────────┘
++----------+  +----------+      +----------+  +----------+
+|   AZ-a   |  |   AZ-b   |      |   AZ-a   |  |   AZ-b   |
+|          |  |          |      |          |  |          |
+| 50% each |  | 50% each |      | 25% each |  | 25% each |
+|   +-+    |  |   +-+    |      |   +-+    |  |   +-+    |
+|   |1|    |  |   |3|    |      |   |1|    |  |   |3|    |
+|   +-+    |  |   |4|    |      |   +-+    |  |   |4|    |
+|          |  |   |5|    |      |          |  |   |5|    |
+|          |  |   |6|    |      |          |  |   |6|    |
++----------+  +----------+      +----------+  +----------+
  1 gets 50%    3,4,5,6 get       Each gets 25%
                12.5% each
 ```
@@ -230,8 +230,8 @@ Without Cross-Zone:              With Cross-Zone:
 
 ### ALB
 ```
-Client ──HTTPS──▶ ALB ──HTTP──▶ Targets
-                   │
+Client --HTTPS--> ALB --HTTP--> Targets
+                   |
             SSL terminated here
 ```
 
@@ -248,8 +248,8 @@ Client ──HTTPS──▶ ALB ──HTTP──▶ Targets
 - Route based on hostname
 
 ```
-client1.com ──▶ cert1 ──▶ Target Group 1
-client2.com ──▶ cert2 ──▶ Target Group 2
+client1.com --> cert1 --> Target Group 1
+client2.com --> cert2 --> Target Group 2
 ```
 
 ---

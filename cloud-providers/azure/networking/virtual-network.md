@@ -22,27 +22,27 @@ Azure Virtual Network (VNet) is the fundamental building block for private netwo
 ## VNet Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 VNet: 10.0.0.0/16                           │
-│                                                              │
-│  ┌────────────────────┐    ┌────────────────────┐          │
-│  │ Subnet: Web        │    │ Subnet: App        │          │
-│  │ 10.0.1.0/24        │    │ 10.0.2.0/24        │          │
-│  │  ┌────┐  ┌────┐   │    │  ┌────┐  ┌────┐   │          │
-│  │  │VM1 │  │VM2 │   │    │  │VM3 │  │VM4 │   │          │
-│  │  └────┘  └────┘   │    │  └────┘  └────┘   │          │
-│  │  NSG: Web-NSG     │    │  NSG: App-NSG     │          │
-│  └────────────────────┘    └────────────────────┘          │
-│                                                              │
-│  ┌────────────────────┐    ┌────────────────────┐          │
-│  │ Subnet: DB         │    │ Subnet: Gateway    │          │
-│  │ 10.0.3.0/24        │    │ 10.0.255.0/24      │          │
-│  │  ┌────┐            │    │  ┌─────────────┐  │          │
-│  │  │ SQL│            │    │  │ VPN Gateway │  │          │
-│  │  └────┘            │    │  └─────────────┘  │          │
-│  │  Private Endpoint  │    │                    │          │
-│  └────────────────────┘    └────────────────────┘          │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                   VNet: 10.0.0.0/16                         |
+|                                                             |
+|  +--------------------+    +--------------------+           |
+|  | Subnet: Web        |    | Subnet: App        |           |
+|  | 10.0.1.0/24        |    | 10.0.2.0/24        |           |
+|  |  +----+  +----+    |    |  +----+  +----+    |           |
+|  |  |VM1 |  |VM2 |    |    |  |VM3 |  |VM4 |    |           |
+|  |  +----+  +----+    |    |  +----+  +----+    |           |
+|  |  NSG: Web-NSG      |    |  NSG: App-NSG      |           |
+|  +--------------------+    +--------------------+           |
+|                                                             |
+|  +--------------------+    +--------------------+           |
+|  | Subnet: DB         |    | Subnet: Gateway    |           |
+|  | 10.0.3.0/24        |    | 10.0.255.0/24      |           |
+|  |  +----+            |    |  +-------------+   |           |
+|  |  | SQL|            |    |  | VPN Gateway |   |           |
+|  |  +----+            |    |  +-------------+   |           |
+|  |  Private Endpoint  |    |                    |           |
+|  +--------------------+    +--------------------+           |
++-------------------------------------------------------------+
 ```
 
 ## Address Space
@@ -139,18 +139,18 @@ Common service tags for NSG rules:
 Group VMs logically for NSG rules:
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                      NSG Rule                         │
-│  Source: ASG-WebServers                              │
-│  Destination: ASG-AppServers                         │
-│  Port: 8080                                          │
-│  Action: Allow                                       │
-└──────────────────────────────────────────────────────┘
-              │                    │
-     ┌────────┴────────┐    ┌─────┴─────┐
-     │ ASG-WebServers  │    │ASG-AppServers│
-     │  VM1, VM2, VM3  │    │  VM4, VM5   │
-     └─────────────────┘    └─────────────┘
++------------------------------------------------------+
+|                      NSG Rule                         |
+|  Source: ASG-WebServers                              |
+|  Destination: ASG-AppServers                         |
+|  Port: 8080                                          |
+|  Action: Allow                                       |
++------------------------------------------------------+
+              |                    |
+     +--------+--------+    +-----+-----+
+     | ASG-WebServers  |    |ASG-AppServers|
+     |  VM1, VM2, VM3  |    |  VM4, VM5   |
+     +-----------------+    +-------------+
 ```
 
 ## VNet Peering
@@ -166,13 +166,13 @@ Group VMs logically for NSG rules:
 
 ```
 VNet A                              VNet B
-┌──────────────────┐    Peering    ┌──────────────────┐
-│   10.0.0.0/16    │◄────────────►│   10.1.0.0/16    │
-│                  │               │                  │
-│  Traffic flows   │               │  Traffic flows   │
-│  directly over   │               │  over Microsoft  │
-│  Azure backbone  │               │  backbone        │
-└──────────────────┘               └──────────────────┘
++------------------+    Peering    +------------------+
+|   10.0.0.0/16    |<------------>|   10.1.0.0/16    |
+|                  |               |                  |
+|  Traffic flows   |               |  Traffic flows   |
+|  directly over   |               |  over Microsoft  |
+|  Azure backbone  |               |  backbone        |
++------------------+               +------------------+
 ```
 
 ### Configuration Options
@@ -199,10 +199,10 @@ Private connection to Azure (not over internet).
 
 ```
 On-premises                 ExpressRoute                 Azure
-┌──────────┐    ┌─────────────────────────┐    ┌──────────┐
-│ Datacenter│────│    Private Connection   │────│   VNet   │
-│          │    │    50 Mbps - 100 Gbps   │    │          │
-└──────────┘    └─────────────────────────┘    └──────────┘
++----------+    +-------------------------+    +----------+
+| Datacenter|----    Private Connection   |----   VNet   |
+|          |    |    50 Mbps - 100 Gbps   |    |          |
++----------+    +-------------------------+    +----------+
 ```
 
 ### Azure Bastion
@@ -210,26 +210,26 @@ On-premises                 ExpressRoute                 Azure
 Secure RDP/SSH without public IPs.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                      VNet                            │
-│                                                      │
-│  ┌────────────────────────────────────────────┐    │
-│  │         AzureBastionSubnet                  │    │
-│  │   ┌──────────────────────────────────┐     │    │
-│  │   │         Azure Bastion            │     │    │
-│  │   │   (Public IP, NSG managed)       │     │    │
-│  │   └──────────────────────────────────┘     │    │
-│  └────────────────────────────────────────────┘    │
-│                        │                             │
-│              RDP/SSH over TLS                       │
-│                        │                             │
-│  ┌─────────────────────▼────────────────────────┐  │
-│  │              VM Subnet                         │  │
-│  │   ┌──────┐  ┌──────┐  ┌──────┐              │  │
-│  │   │ VM1  │  │ VM2  │  │ VM3  │  (No public IP)│
-│  │   └──────┘  └──────┘  └──────┘              │  │
-│  └──────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|                      VNet                            |
+|                                                      |
+|  +--------------------------------------------+    |
+|  |         AzureBastionSubnet                  |    |
+|  |   +----------------------------------+     |    |
+|  |   |         Azure Bastion            |     |    |
+|  |   |   (Public IP, NSG managed)       |     |    |
+|  |   +----------------------------------+     |    |
+|  +--------------------------------------------+    |
+|                        |                             |
+|              RDP/SSH over TLS                       |
+|                        |                             |
+|  +---------------------v------------------------+  |
+|  |              VM Subnet                         |  |
+|  |   +------+  +------+  +------+              |  |
+|  |   | VM1  |  | VM2  |  | VM3  |  (No public IP)|
+|  |   +------+  +------+  +------+              |  |
+|  +----------------------------------------------+  |
++-----------------------------------------------------+
 ```
 
 ## Service Endpoints vs Private Endpoints
@@ -273,22 +273,22 @@ az network private-endpoint create \
 Outbound internet connectivity with static IP.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                      VNet                            │
-│  ┌────────────────────────────────────────────┐    │
-│  │              Subnet                          │    │
-│  │   ┌──────┐  ┌──────┐  ┌──────┐             │    │
-│  │   │ VM1  │  │ VM2  │  │ VM3  │             │    │
-│  │   └──────┘  └──────┘  └──────┘             │    │
-│  └─────────────────┬────────────────────────────┘  │
-│                    │                                 │
-│              ┌─────▼─────┐                          │
-│              │NAT Gateway│                          │
-│              │ Public IP │                          │
-│              └─────┬─────┘                          │
-└────────────────────┼────────────────────────────────┘
-                     │
-                     ▼
++-----------------------------------------------------+
+|                      VNet                            |
+|  +--------------------------------------------+    |
+|  |              Subnet                          |    |
+|  |   +------+  +------+  +------+             |    |
+|  |   | VM1  |  | VM2  |  | VM3  |             |    |
+|  |   +------+  +------+  +------+             |    |
+|  +-------------------+--------------------------+  |
+|                    |                                 |
+|              +-----v-----+                          |
+|              |NAT Gateway|                          |
+|              | Public IP |                          |
+|              +-----+-----+                          |
++--------------------+--------------------------------+
+                     |
+                     v
                  Internet
 ```
 
@@ -331,18 +331,18 @@ az network route-table route create \
 ### Private DNS Zones
 
 ```
-┌─────────────────────────────────────────────────────┐
-│           Private DNS Zone: contoso.local           │
-│                                                      │
-│  Records:                                           │
-│  ├── vm1.contoso.local → 10.0.1.4                  │
-│  ├── vm2.contoso.local → 10.0.1.5                  │
-│  └── sql.contoso.local → 10.0.2.4                  │
-│                                                      │
-│  Linked VNets:                                      │
-│  ├── VNet-Prod (auto-registration enabled)         │
-│  └── VNet-Dev                                       │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|           Private DNS Zone: contoso.local           |
+|                                                      |
+|  Records:                                           |
+|  +-- vm1.contoso.local -> 10.0.1.4                  |
+|  +-- vm2.contoso.local -> 10.0.1.5                  |
+|  +-- sql.contoso.local -> 10.0.2.4                  |
+|                                                      |
+|  Linked VNets:                                      |
+|  +-- VNet-Prod (auto-registration enabled)         |
+|  +-- VNet-Dev                                       |
++-----------------------------------------------------+
 ```
 
 ## CLI Quick Reference
@@ -413,7 +413,7 @@ az network vnet subnet update \
 2. **NSG**: Stateful - return traffic automatically allowed
 3. **NSG association**: Can attach to subnet AND NIC (both evaluated)
 4. **Service tags**: Use instead of hardcoding Azure IPs
-5. **Peering**: Non-transitive (A↔B, B↔C doesn't mean A↔C)
+5. **Peering**: Non-transitive (A<->B, B<->C doesn't mean A<->C)
 6. **Gateway transit**: Share VPN gateway with peered VNets
 7. **Private Endpoint**: Creates NIC in your subnet with private IP
 8. **Service Endpoint**: Traffic stays on Azure backbone but uses public endpoint

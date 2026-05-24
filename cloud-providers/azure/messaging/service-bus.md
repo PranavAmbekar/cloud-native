@@ -21,28 +21,28 @@ Azure Service Bus is a fully managed enterprise message broker with message queu
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                   Service Bus Namespace                          │
-│                                                                  │
-│  Queue (Point-to-Point)                                         │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  Producer ──▶ [msg][msg][msg] ──▶ Consumer              │   │
-│  │               (FIFO order)                               │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│  Topic (Publish-Subscribe)                                      │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  Publisher ──▶ TOPIC                                     │   │
-│  │                  │                                        │   │
-│  │         ┌────────┼────────┐                              │   │
-│  │         ▼        ▼        ▼                              │   │
-│  │    ┌──────┐ ┌──────┐ ┌──────┐                           │   │
-│  │    │Sub 1 │ │Sub 2 │ │Sub 3 │ (filtered subscriptions)  │   │
-│  │    └──┬───┘ └──┬───┘ └──┬───┘                           │   │
-│  │       ▼        ▼        ▼                               │   │
-│  │    Consumer Consumer Consumer                            │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                   Service Bus Namespace                          |
+|                                                                  |
+|  Queue (Point-to-Point)                                          |
+|  +---------------------------------------------------------+    |
+|  |  Producer --> [msg][msg][msg] --> Consumer              |    |
+|  |               (FIFO order)                              |    |
+|  +---------------------------------------------------------+    |
+|                                                                  |
+|  Topic (Publish-Subscribe)                                       |
+|  +---------------------------------------------------------+    |
+|  |  Publisher --> TOPIC                                    |    |
+|  |                  |                                      |    |
+|  |         +--------+--------+                             |    |
+|  |         v        v        v                             |    |
+|  |    +------+ +------+ +------+                           |    |
+|  |    |Sub 1 | |Sub 2 | |Sub 3 | (filtered subscriptions)  |    |
+|  |    +--+---+ +--+---+ +--+---+                           |    |
+|  |       v        v        v                               |    |
+|  |    Consumer Consumer Consumer                           |    |
+|  +---------------------------------------------------------+    |
++------------------------------------------------------------------+
 ```
 
 ## Tiers
@@ -206,11 +206,11 @@ receiver = client.get_queue_receiver("myqueue", receive_mode=ServiceBusReceiveMo
 
 ```
 Queue: myqueue
-├── Active messages
-└── Dead-letter Queue: myqueue/$deadletterqueue
-    ├── Expired messages
-    ├── Max delivery count exceeded
-    └── Explicit dead-lettering
++-- Active messages
++-- Dead-letter Queue: myqueue/$deadletterqueue
+    +-- Expired messages
+    +-- Max delivery count exceeded
+    +-- Explicit dead-lettering
 
 Access DLQ:
 receiver = client.get_queue_receiver("myqueue", sub_queue=ServiceBusSubQueue.DEAD_LETTER)
@@ -230,10 +230,10 @@ receiver = client.get_queue_receiver("myqueue", sub_queue=ServiceBusSubQueue.DEA
 
 ```
 Session "order-123":
-[msg1] → [msg2] → [msg3] → Consumer (processes in order)
+[msg1] -> [msg2] -> [msg3] -> Consumer (processes in order)
 
 Session "order-456":
-[msg4] → [msg5] → Consumer (different session)
+[msg4] -> [msg5] -> Consumer (different session)
 ```
 
 ```python
@@ -283,14 +283,14 @@ with ServiceBusClient.from_connection_string(connection_str) as client:
 ```
 Primary Namespace                Secondary Namespace
 (West US)                        (East US)
-┌─────────────────┐              ┌─────────────────┐
-│ Queues/Topics   │ ───────────▶ │ Queues/Topics   │
-│ (Active)        │   metadata   │ (Standby)       │
-└─────────────────┘    sync      └─────────────────┘
-        │
-   ┌────┴────┐
-   │  Alias  │  → Failover switches to secondary
-   └─────────┘
++-----------------+              +-----------------+
+| Queues/Topics   | -----------> | Queues/Topics   |
+| (Active)        |   metadata   | (Standby)       |
++-----------------+    sync      +-----------------+
+        |
+   +----+----+
+   |  Alias  |  --> Failover switches to secondary
+   +---------+
 ```
 
 ## CLI Quick Reference

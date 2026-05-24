@@ -143,13 +143,13 @@ public void Run(
 ## Timer Trigger CRON Expressions
 
 ```
-┌───────────── second (0-59)
-│ ┌───────────── minute (0-59)
-│ │ ┌───────────── hour (0-23)
-│ │ │ ┌───────────── day of month (1-31)
-│ │ │ │ ┌───────────── month (1-12)
-│ │ │ │ │ ┌───────────── day of week (0-6, Sunday=0)
-│ │ │ │ │ │
++------------- second (0-59)
+| +----------- minute (0-59)
+| | +--------- hour (0-23)
+| | | +------- day of month (1-31)
+| | | | +----- month (1-12)
+| | | | | +--- day of week (0-6, Sunday=0)
+| | | | | |
 * * * * * *
 
 Examples:
@@ -168,21 +168,21 @@ Stateful functions for complex workflows.
 
 ```
 1. Function Chaining
-   F1 → F2 → F3 → F4
+   F1 -> F2 -> F3 -> F4
 
 2. Fan-out/Fan-in
-        ┌→ F1 ─┐
-   Start ├→ F2 ─┼→ Aggregate
-        └→ F3 ─┘
+        +-> F1 -+
+   Start +-> F2 -+-> Aggregate
+        +-> F3 -+
 
 3. Async HTTP APIs
-   POST → Start → GET /status → GET /result
+   POST -> Start -> GET /status -> GET /result
 
 4. Monitor
-   Loop: Check condition → Wait → Repeat
+   Loop: Check condition -> Wait -> Repeat
 
 5. Human Interaction
-   Request → Wait for approval → Continue
+   Request -> Wait for approval -> Continue
 ```
 
 ### Durable Functions Example
@@ -238,24 +238,24 @@ my_setting = os.environ['MY_SETTING']
 ### VNet Integration (Premium/Dedicated)
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                        VNet                          │
-│  ┌─────────────────────────────────────────────────┐│
-│  │              Integration Subnet                  ││
-│  │  ┌──────────────┐                               ││
-│  │  │ Function App │ ──────▶ Private Resources    ││
-│  │  │ (outbound)   │         (SQL, Storage, etc.) ││
-│  │  └──────────────┘                               ││
-│  └─────────────────────────────────────────────────┘│
-│                                                      │
-│  ┌─────────────────────────────────────────────────┐│
-│  │              Private Endpoint                    ││
-│  │  ┌──────────────┐                               ││
-│  │  │ Function App │ ◀────── Inbound traffic      ││
-│  │  │ (inbound)    │         (private access)     ││
-│  │  └──────────────┘                               ││
-│  └─────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|                        VNet                         |
+|  +-------------------------------------------------+|
+|  |              Integration Subnet                 ||
+|  |  +--------------+                               ||
+|  |  | Function App | ------> Private Resources    ||
+|  |  | (outbound)   |         (SQL, Storage, etc.) ||
+|  |  +--------------+                               ||
+|  +-------------------------------------------------+|
+|                                                     |
+|  +-------------------------------------------------+|
+|  |              Private Endpoint                   ||
+|  |  +--------------+                               ||
+|  |  | Function App | <------ Inbound traffic      ||
+|  |  | (inbound)    |         (private access)     ||
+|  |  +--------------+                               ||
+|  +-------------------------------------------------+|
++-----------------------------------------------------+
 ```
 
 ## Deployment Options

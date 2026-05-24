@@ -33,10 +33,10 @@ EC2 provides resizable compute capacity. You launch virtual servers (instances),
 
 ```
 m5.2xlarge
-│ │  │
-│ │  └─ Size (nano, micro, small, medium, large, xlarge, 2xlarge...)
-│ └──── Generation (higher = newer)
-└────── Family (m = general purpose)
+| |  |
+| |  +- Size (nano, micro, small, medium, large, xlarge, 2xlarge...)
+| +---- Generation (higher = newer)
++------ Family (m = general purpose)
 ```
 
 ## Pricing Models
@@ -82,15 +82,15 @@ m5.2xlarge
 ## Auto Scaling
 
 ```
-┌─────────────────────────────────────────┐
-│           Auto Scaling Group            │
-│  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐   │
-│  │ EC2 │  │ EC2 │  │ EC2 │  │ EC2 │   │
-│  └─────┘  └─────┘  └─────┘  └─────┘   │
-│     Min: 2    Desired: 4    Max: 10    │
-└─────────────────────────────────────────┘
-         │
-         ▼
++-----------------------------------------+
+|           Auto Scaling Group            |
+|  +-----+  +-----+  +-----+  +-----+   |
+|  | EC2 |  | EC2 |  | EC2 |  | EC2 |   |
+|  +-----+  +-----+  +-----+  +-----+   |
+|     Min: 2    Desired: 4    Max: 10    |
++-----------------------------------------+
+         |
+         v
    Scaling Policies
    - Target tracking (keep CPU at 50%)
    - Step scaling (add 2 if CPU > 80%)

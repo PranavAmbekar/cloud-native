@@ -43,7 +43,7 @@ Azure Blob Storage stores massive amounts of unstructured data—text or binary.
 | Standard | < 15 hours | Lower |
 
 ```
-Hot ←→ Cool ←→ Cold ←→ Archive
+Hot <-> Cool <-> Cold <-> Archive
      (instant)  (instant)  (rehydration required)
 ```
 
@@ -60,12 +60,12 @@ Hot ←→ Cool ←→ Cold ←→ Archive
 
 ```
 Primary Region                  Secondary Region (Paired)
-┌─────────────────┐             ┌─────────────────┐
-│  Zone 1  Zone 2  Zone 3 │ ──────▶ │  LRS (3 copies) │
-│   │       │       │     │ async   │                 │
-│   └───────┴───────┘     │         │  (Read access   │
-│      ZRS (3 copies)     │         │   with RA-*)    │
-└─────────────────────────┘         └─────────────────┘
++-------------------------+     +-------------------+
+|  Zone 1  Zone 2  Zone 3 | --> |  LRS (3 copies)   |
+|   |       |       |     |async|                   |
+|   +-------+-------+     |     |  (Read access     |
+|      ZRS (3 copies)     |     |   with RA-*)      |
++-------------------------+     +-------------------+
 ```
 
 ## Lifecycle Management
@@ -136,16 +136,16 @@ az storage blob generate-sas \
 ## Blob Versioning & Soft Delete
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Container: documents                                │
-│                                                      │
-│  report.pdf ──┬── Version 1 (previous)              │
-│               ├── Version 2 (previous)              │
-│               └── Version 3 (current)               │
-│                                                      │
-│  Soft Delete: 7-30 days retention (configurable)    │
-│  Container Soft Delete: Recover deleted containers  │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|  Container: documents                                |
+|                                                      |
+|  report.pdf --+-- Version 1 (previous)              |
+|               +-- Version 2 (previous)              |
+|               +-- Version 3 (current)               |
+|                                                      |
+|  Soft Delete: 7-30 days retention (configurable)    |
+|  Container Soft Delete: Recover deleted containers  |
++-----------------------------------------------------+
 ```
 
 ## Data Protection Features
@@ -171,11 +171,11 @@ Async copy blobs between storage accounts.
 
 ```
 Source Account                    Destination Account
-┌─────────────────┐              ┌─────────────────┐
-│ Container: logs │  ──────────▶ │ Container: logs │
-│                 │    async     │                 │
-│ (Policy based)  │              │ (Replica)       │
-└─────────────────┘              └─────────────────┘
++-----------------+              +-----------------+
+| Container: logs |  ----------> | Container: logs |
+|                 |    async     |                 |
+| (Policy based)  |              | (Replica)       |
++-----------------+              +-----------------+
 ```
 
 Requirements:

@@ -22,32 +22,32 @@ Azure Machine Learning is a cloud-based environment for training, deploying, aut
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Azure ML Workspace                            │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                       Studio UI                            │  │
-│  │  • Designer (drag-and-drop)  • Notebooks  • AutoML        │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                              │                                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   Compute   │  │ Datastores  │  │   Models    │             │
-│  │             │  │             │  │             │             │
-│  │ • Instances │  │ • Blob      │  │ • Registry  │             │
-│  │ • Clusters  │  │ • ADLS      │  │ • Versions  │             │
-│  │ • Kubernetes│  │ • SQL       │  │ • Artifacts │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-│                              │                                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │ Experiments │  │  Pipelines  │  │  Endpoints  │             │
-│  │             │  │             │  │             │             │
-│  │ • Runs      │  │ • Jobs      │  │ • Online    │             │
-│  │ • Metrics   │  │ • Components│  │ • Batch     │             │
-│  │ • Artifacts │  │ • Schedules │  │             │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-└─────────────────────────────────────────────────────────────────┘
-         │                    │                    │
-         ▼                    ▼                    ▼
++------------------------------------------------------------------+
+|                    Azure ML Workspace                            |
+|                                                                  |
+|  +----------------------------------------------------------+   |
+|  |                       Studio UI                          |   |
+|  |  * Designer (drag-and-drop)  * Notebooks  * AutoML       |   |
+|  +----------------------------------------------------------+   |
+|                              |                                   |
+|  +-------------+  +-------------+  +-------------+               |
+|  |   Compute   |  | Datastores  |  |   Models    |               |
+|  |             |  |             |  |             |               |
+|  | * Instances |  | * Blob      |  | * Registry  |               |
+|  | * Clusters  |  | * ADLS      |  | * Versions  |               |
+|  | * Kubernetes|  | * SQL       |  | * Artifacts |               |
+|  +-------------+  +-------------+  +-------------+               |
+|                              |                                   |
+|  +-------------+  +-------------+  +-------------+               |
+|  | Experiments |  |  Pipelines  |  |  Endpoints  |               |
+|  |             |  |             |  |             |               |
+|  | * Runs      |  | * Jobs      |  | * Online    |               |
+|  | * Metrics   |  | * Components|  | * Batch     |               |
+|  | * Artifacts |  | * Schedules |  |             |               |
+|  +-------------+  +-------------+  +-------------+               |
++------------------------------------------------------------------+
+         |                    |                    |
+         v                    v                    v
    Storage Account      Key Vault      Container Registry
     (Artifacts)         (Secrets)         (Images)
 ```

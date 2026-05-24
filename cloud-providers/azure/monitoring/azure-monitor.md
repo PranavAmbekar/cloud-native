@@ -20,32 +20,32 @@ Azure Monitor collects and aggregates data from every layer of your application 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Data Sources                              │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌──────────┐ │
-│  │   VMs   │ │   AKS   │ │  Apps   │ │ Storage │ │ Custom   │ │
-│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘ └────┬─────┘ │
-└───────┼───────────┼───────────┼───────────┼───────────┼────────┘
-        │           │           │           │           │
-        ▼           ▼           ▼           ▼           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       Azure Monitor                              │
-│                                                                  │
-│  ┌─────────────────────┐    ┌─────────────────────────────┐    │
-│  │       Metrics       │    │          Logs                │    │
-│  │   (Time-series DB)  │    │   (Log Analytics Workspace) │    │
-│  │   • Platform metrics│    │   • Resource logs            │    │
-│  │   • Custom metrics  │    │   • Activity logs            │    │
-│  │   • Guest metrics   │    │   • Application logs         │    │
-│  └─────────┬───────────┘    └─────────────┬───────────────┘    │
-│            │                               │                     │
-│            └───────────────┬───────────────┘                    │
-│                            ▼                                     │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                     Analyze & Act                         │   │
-│  │  • Alerts   • Dashboards   • Workbooks   • Autoscale    │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------+
+|                        Data Sources                               |
+|  +---------+ +---------+ +---------+ +---------+ +----------+     |
+|  |   VMs   | |   AKS   | |  Apps   | | Storage | | Custom   |     |
+|  +----+----+ +----+----+ +----+----+ +----+----+ +----+-----+     |
++-------|-----------|-----------|-----------|-----------|-----------+
+        |           |           |           |           |
+        v           v           v           v           v
++-------------------------------------------------------------------+
+|                       Azure Monitor                               |
+|                                                                   |
+|  +---------------------+    +-----------------------------+       |
+|  |       Metrics       |    |          Logs               |       |
+|  |   (Time-series DB)  |    |   (Log Analytics Workspace) |       |
+|  |   - Platform metrics|    |   - Resource logs           |       |
+|  |   - Custom metrics  |    |   - Activity logs           |       |
+|  |   - Guest metrics   |    |   - Application logs        |       |
+|  +---------+-----------+    +-------------+---------------+       |
+|            |                              |                       |
+|            +---------------+--------------+                       |
+|                            v                                      |
+|  +---------------------------------------------------------+      |
+|  |                     Analyze & Act                       |      |
+|  |  - Alerts   - Dashboards   - Workbooks   - Autoscale    |      |
+|  +---------------------------------------------------------+      |
++-------------------------------------------------------------------+
 ```
 
 ## Metrics
@@ -80,11 +80,11 @@ Time range: Last 24 hours
 Split by: Instance
 
 Chart:
-100% ┤
- 75% ┤     ╭──╮     ╭───╮
- 50% ┤  ╭──╯  ╰──╮──╯   ╰──╮
- 25% ┤──╯                   ╰──
-  0% ┼────┴────┴────┴────┴────
+100% |
+ 75% |     /--\     /---\
+ 50% |  /--    \---/     \--
+ 25% |--                    --
+  0% +----+----+----+----+----
      12:00  18:00  00:00  06:00
 ```
 
@@ -164,13 +164,13 @@ AzureActivity
 
 ```
 Alert Rule:
-├── Scope: Which resource(s)
-├── Condition: When to fire
-│   ├── Signal: Metric or Log query
-│   ├── Threshold: Value to compare
-│   └── Frequency: How often to check
-├── Action Group: What to do
-└── Severity: 0 (Critical) to 4 (Verbose)
+|-- Scope: Which resource(s)
+|-- Condition: When to fire
+|   |-- Signal: Metric or Log query
+|   |-- Threshold: Value to compare
+|   +-- Frequency: How often to check
+|-- Action Group: What to do
++-- Severity: 0 (Critical) to 4 (Verbose)
 ```
 
 ### Metric Alert Example
@@ -243,19 +243,19 @@ az monitor action-group create \
 
 ```
 Application Insights:
-├── Performance
-│   ├── Server response times
-│   ├── Failed requests
-│   └── Dependency calls
-├── Usage
-│   ├── Users and sessions
-│   ├── Page views
-│   └── Custom events
-├── Failures
-│   ├── Exceptions
-│   └── Failed dependencies
-└── Availability
-    └── URL ping tests
+|-- Performance
+|   |-- Server response times
+|   |-- Failed requests
+|   +-- Dependency calls
+|-- Usage
+|   |-- Users and sessions
+|   |-- Page views
+|   +-- Custom events
+|-- Failures
+|   |-- Exceptions
+|   +-- Failed dependencies
++-- Availability
+    +-- URL ping tests
 ```
 
 ### Enabling VM Insights

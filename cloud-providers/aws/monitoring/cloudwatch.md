@@ -146,12 +146,12 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
 ### Structure
 ```
 Log Group: /aws/lambda/my-function
-├── Log Stream: 2024/01/15/[$LATEST]abc123
-│   ├── Log Event: timestamp + message
-│   ├── Log Event: timestamp + message
-│   └── ...
-└── Log Stream: 2024/01/15/[$LATEST]def456
-    └── ...
++-- Log Stream: 2024/01/15/[$LATEST]abc123
+|   +-- Log Event: timestamp + message
+|   +-- Log Event: timestamp + message
+|   +-- ...
++-- Log Stream: 2024/01/15/[$LATEST]def456
+    +-- ...
 ```
 
 ### Retention
@@ -187,20 +187,20 @@ fields @timestamp, @message
 Extract metrics from log data.
 
 ```
-Log Group → Metric Filter → CloudWatch Metric
+Log Group -> Metric Filter -> CloudWatch Metric
 
 Filter Pattern: [ERROR]
-→ Creates metric: ErrorCount
+-> Creates metric: ErrorCount
 
 Filter Pattern: { $.statusCode = 500 }
-→ Creates metric: Server500Errors
+-> Creates metric: Server500Errors
 ```
 
 ### Subscription Filters
 Stream logs to other services.
 
 ```
-Log Group → Subscription Filter → Lambda / Kinesis / OpenSearch
+Log Group -> Subscription Filter -> Lambda / Kinesis / OpenSearch
 ```
 
 ### Export
@@ -229,7 +229,7 @@ Metric: CPUUtilization
 Condition: > 80%
 Period: 5 minutes
 Evaluation Periods: 3
-→ Trigger if CPU > 80% for 3 consecutive 5-min periods
+-> Trigger if CPU > 80% for 3 consecutive 5-min periods
 ```
 
 **Composite Alarm**
@@ -292,12 +292,12 @@ aws cloudwatch put-metric-alarm \
 Metrics for containers.
 
 ```
-ECS/EKS → Container Insights → CloudWatch
-                                    │
-                              ├── Cluster metrics
-                              ├── Service metrics
-                              ├── Task/Pod metrics
-                              └── Container metrics
+ECS/EKS -> Container Insights -> CloudWatch
+                                    |
+                              +-- Cluster metrics
+                              +-- Service metrics
+                              +-- Task/Pod metrics
+                              +-- Container metrics
 ```
 
 Metrics:
@@ -352,9 +352,9 @@ Features:
 ML-based anomaly detection for metrics.
 
 ```
-Historical data → ML model → Expected band
-                                  │
-Current value outside band → Alarm
+Historical data -> ML model -> Expected band
+                                  |
+Current value outside band -> Alarm
 ```
 
 ```bash
@@ -372,8 +372,8 @@ aws cloudwatch put-anomaly-detector \
 Analyze high-cardinality data.
 
 ```
-VPC Flow Logs → Contributor Insights → Top talkers
-CloudTrail → Contributor Insights → Top API callers
+VPC Flow Logs -> Contributor Insights -> Top talkers
+CloudTrail -> Contributor Insights -> Top API callers
 ```
 
 ---

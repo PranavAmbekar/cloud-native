@@ -28,16 +28,16 @@
 
 ### Key Hierarchy
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│   AWS Owned    │   AWS Managed    │   Customer Managed         │
-│                │                  │                             │
-│   No visibility│   View in KMS    │   Full control             │
-│   No control   │   Limited control│   Rotation, policies       │
-│   Free         │   Free*          │   $1/month + usage         │
-│                │                  │                             │
-│   * charged when used by some services                         │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                                                                  |
+|   AWS Owned    |   AWS Managed    |   Customer Managed           |
+|                |                  |                              |
+|   No visibility|   View in KMS    |   Full control               |
+|   No control   |   Limited control|   Rotation, policies         |
+|   Free         |   Free*          |   $1/month + usage           |
+|                |                  |                              |
+|   * charged when used by some services                           |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -45,23 +45,23 @@
 ## Envelope Encryption
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Envelope Encryption                          │
-│                                                                 │
-│   1. GenerateDataKey                                           │
-│      KMS Key ──▶ Plaintext Data Key + Encrypted Data Key       │
-│                                                                 │
-│   2. Encrypt Data                                              │
-│      Plaintext Data Key + Data ──▶ Encrypted Data              │
-│                                                                 │
-│   3. Store                                                     │
-│      Encrypted Data Key + Encrypted Data (delete plaintext key)│
-│                                                                 │
-│   4. Decrypt (later)                                           │
-│      Encrypted Data Key ──▶ KMS ──▶ Plaintext Data Key        │
-│      Plaintext Data Key + Encrypted Data ──▶ Data             │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                     Envelope Encryption                          |
+|                                                                  |
+|   1. GenerateDataKey                                             |
+|      KMS Key --> Plaintext Data Key + Encrypted Data Key         |
+|                                                                  |
+|   2. Encrypt Data                                                |
+|      Plaintext Data Key + Data --> Encrypted Data                |
+|                                                                  |
+|   3. Store                                                       |
+|      Encrypted Data Key + Encrypted Data (delete plaintext key)  |
+|                                                                  |
+|   4. Decrypt (later)                                             |
+|      Encrypted Data Key --> KMS --> Plaintext Data Key           |
+|      Plaintext Data Key + Encrypted Data --> Data                |
+|                                                                  |
++------------------------------------------------------------------+
 ```
 
 Why envelope encryption?
@@ -138,15 +138,15 @@ Access requires BOTH:
 2. IAM policy allows it (if principal is in same account)
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│   Same Account:                                                 │
-│   Key Policy (root access) + IAM Policy = Access               │
-│                                                                 │
-│   Cross Account:                                                │
-│   Key Policy (explicit principal) + IAM Policy = Access        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                                                                  |
+|   Same Account:                                                  |
+|   Key Policy (root access) + IAM Policy = Access                 |
+|                                                                  |
+|   Cross Account:                                                 |
+|   Key Policy (explicit principal) + IAM Policy = Access          |
+|                                                                  |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -204,13 +204,13 @@ Use cases:
 Replicate keys across regions.
 
 ```
-┌──────────────────┐         ┌──────────────────┐
-│   us-east-1      │         │   eu-west-1      │
-│                  │         │                  │
-│  Primary Key     │ ───────▶│  Replica Key    │
-│  (mrk-xxx)       │  sync   │  (mrk-xxx)       │
-│                  │         │                  │
-└──────────────────┘         └──────────────────┘
++-------------------+         +-------------------+
+|    us-east-1      |         |    eu-west-1      |
+|                   |         |                   |
+|   Primary Key     |-------->|   Replica Key     |
+|   (mrk-xxx)       |  sync   |   (mrk-xxx)       |
+|                   |         |                   |
++-------------------+         +-------------------+
 
 Same key ID, interoperable
 Encrypt in us-east-1, decrypt in eu-west-1

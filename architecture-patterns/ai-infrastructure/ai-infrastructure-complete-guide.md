@@ -1360,4 +1360,3 @@ This document was compiled from the following sources:
 - [OpenAI-Anthropic Safety Evaluation](https://openai.com/index/openai-anthropic-safety-evaluation/)
 - [Transformer Architecture - Wikipedia](https://en.wikipedia.org/wiki/Transformer_(deep_learning))
 - [InfiniBand vs RoCE for AI Networks](https://www.vitextech.com/blogs/blog/infiniband-vs-ethernet-for-ai-clusters-effective-gpu-networks-in-2025)
-

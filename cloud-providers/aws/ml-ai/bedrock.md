@@ -35,29 +35,29 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Amazon Bedrock                           │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                   Foundation Models                       │  │
-│  │   Claude │ Llama │ Titan │ Mistral │ Cohere │ Stable     │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                              │                                  │
-│         ┌────────────────────┼────────────────────┐            │
-│         │                    │                    │            │
-│         ▼                    ▼                    ▼            │
-│  ┌────────────┐     ┌────────────┐      ┌────────────┐        │
-│  │  Invoke    │     │ Knowledge  │      │   Agents   │        │
-│  │   Model    │     │   Bases    │      │            │        │
-│  │            │     │   (RAG)    │      │            │        │
-│  └────────────┘     └────────────┘      └────────────┘        │
-│         │                    │                    │            │
-│         └────────────────────┴────────────────────┘            │
-│                              │                                  │
-│                      ┌───────┴───────┐                         │
-│                      │  Guardrails   │                         │
-│                      └───────────────┘                         │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        Amazon Bedrock                           |
+|                                                                 |
+|  +----------------------------------------------------------+  |
+|  |                   Foundation Models                       |  |
+|  |   Claude | Llama | Titan | Mistral | Cohere | Stable      |  |
+|  +----------------------------------------------------------+  |
+|                              |                                  |
+|         +--------------------+--------------------+             |
+|         |                    |                    |             |
+|         v                    v                    v             |
+|  +------------+     +------------+      +------------+          |
+|  |  Invoke    |     | Knowledge  |      |   Agents   |          |
+|  |   Model    |     |   Bases    |      |            |          |
+|  |            |     |   (RAG)    |      |            |          |
+|  +------------+     +------------+      +------------+          |
+|         |                    |                    |             |
+|         +--------------------+--------------------+             |
+|                              |                                  |
+|                      +-------+-------+                          |
+|                      |  Guardrails   |                          |
+|                      +---------------+                          |
++-----------------------------------------------------------------+
 ```
 
 ---
@@ -127,25 +127,25 @@ Works with all text models - no model-specific formatting.
 Retrieval Augmented Generation with your data.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Knowledge Base                           │
-│                                                                 │
-│  1. Data Sources                                                │
-│     S3 bucket → Documents (PDF, TXT, HTML, MD, CSV, etc.)      │
-│                                                                 │
-│  2. Chunking                                                    │
-│     Documents → Chunks (fixed size, semantic, etc.)            │
-│                                                                 │
-│  3. Embeddings                                                  │
-│     Chunks → Titan Embeddings → Vectors                        │
-│                                                                 │
-│  4. Vector Store                                                │
-│     Vectors → OpenSearch / Aurora / Pinecone / Redis           │
-│                                                                 │
-│  5. Query                                                       │
-│     User question → Retrieve relevant chunks → Generate answer │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        Knowledge Base                           |
+|                                                                 |
+|  1. Data Sources                                                |
+|     S3 bucket -> Documents (PDF, TXT, HTML, MD, CSV, etc.)      |
+|                                                                 |
+|  2. Chunking                                                    |
+|     Documents -> Chunks (fixed size, semantic, etc.)            |
+|                                                                 |
+|  3. Embeddings                                                  |
+|     Chunks -> Titan Embeddings -> Vectors                       |
+|                                                                 |
+|  4. Vector Store                                                |
+|     Vectors -> OpenSearch / Aurora / Pinecone / Redis           |
+|                                                                 |
+|  5. Query                                                       |
+|     User question -> Retrieve relevant chunks -> Generate answer|
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Supported Vector Stores
@@ -181,31 +181,31 @@ print(response['output']['text'])
 Autonomous AI that reasons, plans, and takes actions.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Bedrock Agent                           │
-│                                                                 │
-│   User: "Book a flight from NYC to London for next Friday"     │
-│                              │                                  │
-│                              ▼                                  │
-│   ┌────────────────────────────────────────────────────────┐   │
-│   │                   Agent Reasoning                       │   │
-│   │   1. Understand request                                 │   │
-│   │   2. Plan steps                                         │   │
-│   │   3. Execute actions                                    │   │
-│   │   4. Return results                                     │   │
-│   └────────────────────────────────────────────────────────┘   │
-│                              │                                  │
-│         ┌────────────────────┼────────────────────┐            │
-│         ▼                    ▼                    ▼            │
-│   ┌──────────┐        ┌──────────┐        ┌──────────┐        │
-│   │  Action  │        │  Action  │        │Knowledge │        │
-│   │  Group   │        │  Group   │        │  Base    │        │
-│   │(Lambda)  │        │(API)     │        │          │        │
-│   │          │        │          │        │          │        │
-│   │searchFlts│        │ bookFlt  │        │  FAQs    │        │
-│   └──────────┘        └──────────┘        └──────────┘        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                         Bedrock Agent                           |
+|                                                                 |
+|   User: "Book a flight from NYC to London for next Friday"     |
+|                              |                                  |
+|                              v                                  |
+|   +--------------------------------------------------------+   |
+|   |                   Agent Reasoning                       |   |
+|   |   1. Understand request                                 |   |
+|   |   2. Plan steps                                         |   |
+|   |   3. Execute actions                                    |   |
+|   |   4. Return results                                     |   |
+|   +--------------------------------------------------------+   |
+|                              |                                  |
+|         +--------------------+--------------------+             |
+|         v                    v                    v             |
+|   +----------+        +----------+        +----------+          |
+|   |  Action  |        |  Action  |        |Knowledge |          |
+|   |  Group   |        |  Group   |        |  Base    |          |
+|   |(Lambda)  |        |(API)     |        |          |          |
+|   |          |        |          |        |          |          |
+|   |searchFlts|        | bookFlt  |        |  FAQs    |          |
+|   +----------+        +----------+        +----------+          |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Action Groups
@@ -221,19 +221,19 @@ Define what actions the agent can take:
 Content filters and safety controls.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Guardrails                               │
-│                                                                 │
-│   Input ──▶ [Filter] ──▶ Model ──▶ [Filter] ──▶ Output         │
-│                                                                 │
-│   Filters:                                                      │
-│   ├── Content filters (hate, violence, sexual, etc.)           │
-│   ├── Denied topics (custom topics to block)                   │
-│   ├── Word filters (profanity, custom words)                   │
-│   ├── Sensitive info (PII detection/masking)                   │
-│   └── Contextual grounding (hallucination prevention)          │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        Guardrails                               |
+|                                                                 |
+|   Input --> [Filter] --> Model --> [Filter] --> Output          |
+|                                                                 |
+|   Filters:                                                      |
+|   +-- Content filters (hate, violence, sexual, etc.)            |
+|   +-- Denied topics (custom topics to block)                    |
+|   +-- Word filters (profanity, custom words)                    |
+|   +-- Sensitive info (PII detection/masking)                    |
+|   +-- Contextual grounding (hallucination prevention)           |
+|                                                                 |
++-----------------------------------------------------------------+
 ```
 
 ### Configure Guardrail
@@ -267,8 +267,8 @@ response = bedrock.create_guardrail(
 Train model on your data.
 
 ```
-Your Data (JSONL) → Fine-tuning Job → Custom Model
-                         │
+Your Data (JSONL) -> Fine-tuning Job -> Custom Model
+                         |
                     Training on
                     your examples
 ```
@@ -449,25 +449,25 @@ All API calls logged.
 
 ### Chatbot
 ```
-User → Bedrock (Claude) → Response
-         │
+User -> Bedrock (Claude) -> Response
+         |
     Conversation history
     in messages array
 ```
 
 ### RAG Application
 ```
-User query → Knowledge Base → Retrieved context → Claude → Answer
+User query -> Knowledge Base -> Retrieved context -> Claude -> Answer
 ```
 
 ### Document Processing
 ```
-PDF → Textract → Summarize with Claude → Store insights
+PDF -> Textract -> Summarize with Claude -> Store insights
 ```
 
 ### Code Generation
 ```
-Prompt → Claude → Code → Review → Iterate
+Prompt -> Claude -> Code -> Review -> Iterate
 ```
 
 ---

@@ -20,25 +20,25 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         Region                               │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Cluster Volume (Shared Storage)         │    │
-│  │    ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐     │    │
-│  │    │Copy1│  │Copy2│  │Copy3│  │Copy4│  │Copy5│ ... │    │
-│  │    └─────┘  └─────┘  └─────┘  └─────┘  └─────┘     │    │
-│  │       AZ-a      AZ-b      AZ-c    (6 copies total)  │    │
-│  └─────────────────────────────────────────────────────┘    │
-│         ▲              ▲              ▲                      │
-│         │              │              │                      │
-│  ┌──────┴──────┐ ┌─────┴─────┐ ┌─────┴─────┐               │
-│  │   Primary   │ │  Replica  │ │  Replica  │               │
-│  │   (R/W)     │ │  (Read)   │ │  (Read)   │               │
-│  └─────────────┘ └───────────┘ └───────────┘               │
-│         │                                                    │
-│    Writer Endpoint          Reader Endpoint                  │
-│    (always primary)         (load balanced)                  │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                         Region                               |
+|  +-----------------------------------------------------+    |
+|  |              Cluster Volume (Shared Storage)         |    |
+|  |    +-----+  +-----+  +-----+  +-----+  +-----+     |    |
+|  |    |Copy1|  |Copy2|  |Copy3|  |Copy4|  |Copy5| ... |    |
+|  |    +-----+  +-----+  +-----+  +-----+  +-----+     |    |
+|  |       AZ-a      AZ-b      AZ-c    (6 copies total)  |    |
+|  +-----------------------------------------------------+    |
+|         ^              ^              ^                      |
+|         |              |              |                      |
+|  +------+------+ +-----+-----+ +-----+-----+               |
+|  |   Primary   | |  Replica  | |  Replica  |               |
+|  |   (R/W)     | |  (Read)   | |  (Read)   |               |
+|  +-------------+ +-----------+ +-----------+               |
+|         |                                                    |
+|    Writer Endpoint          Reader Endpoint                  |
+|    (always primary)         (load balanced)                  |
++-------------------------------------------------------------+
 ```
 
 ---
@@ -114,15 +114,15 @@ aws rds failover-db-cluster --db-cluster-identifier my-cluster
 Auto-scaling compute capacity.
 
 ```
-┌─────────────────────────────────────────────────┐
-│ Aurora Serverless v2                            │
-│                                                 │
-│    Min ACU ────────────────────── Max ACU       │
-│     0.5                            128          │
-│      │                               │          │
-│      └──── Scales in seconds ────────┘          │
-│                                                 │
-└─────────────────────────────────────────────────┘
++-------------------------------------------------+
+| Aurora Serverless v2                            |
+|                                                 |
+|    Min ACU ---------------------- Max ACU       |
+|     0.5                            128          |
+|      |                               |          |
+|      +---- Scales in seconds --------+          |
+|                                                 |
++-------------------------------------------------+
 ```
 
 ### ACU (Aurora Capacity Unit)
@@ -146,15 +146,15 @@ Auto-scaling compute capacity.
 Cross-region replication with < 1 second lag.
 
 ```
-┌──────────────────┐                    ┌──────────────────┐
-│  Primary Region  │                    │ Secondary Region │
-│   (us-east-1)    │     < 1 sec lag    │   (eu-west-1)    │
-│  ┌────────────┐  │                    │  ┌────────────┐  │
-│  │  Primary   │──│────────────────────│─▶│  Replica   │  │
-│  │  Cluster   │  │                    │  │  Cluster   │  │
-│  └────────────┘  │                    │  └────────────┘  │
-└──────────────────┘                    └──────────────────┘
-         │                                       │
++------------------+                    +------------------+
+|  Primary Region  |                    | Secondary Region |
+|   (us-east-1)    |     < 1 sec lag    |   (eu-west-1)    |
+|  +------------+  |                    |  +------------+  |
+|  |  Primary   |--|--------------------|->|  Replica   |  |
+|  |  Cluster   |  |                    |  |  Cluster   |  |
+|  +------------+  |                    |  +------------+  |
++------------------+                    +------------------+
+         |                                       |
     Read/Write                              Read Only
                                           (can promote)
 ```
@@ -206,9 +206,9 @@ Integrates with:
 ### Backtrack (MySQL only)
 ```
 Rewind database to point in time WITHOUT restore
-─────────────────────────────────────────────────▶ Time
-           ▲                              ▲
-           │                              │
+-------------------------------------------------> Time
+           ^                              ^
+           |                              |
       Backtrack to                   Current
       this point                      state
 ```
@@ -231,13 +231,13 @@ Create copy of database in minutes.
 
 ```
 Original Cluster                Clone
-┌─────────────────┐       ┌─────────────────┐
-│                 │       │                 │
-│   Shared Data   │◄─────▶│   Shared Data   │
-│    (copy on     │       │    (copy on     │
-│     write)      │       │     write)      │
-│                 │       │                 │
-└─────────────────┘       └─────────────────┘
++-----------------+       +-----------------+
+|                 |       |                 |
+|   Shared Data   |<----->|   Shared Data   |
+|    (copy on     |       |    (copy on     |
+|     write)      |       |     write)      |
+|                 |       |                 |
++-----------------+       +-----------------+
 ```
 
 - Uses copy-on-write

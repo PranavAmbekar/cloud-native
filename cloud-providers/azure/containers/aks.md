@@ -21,29 +21,29 @@ Azure Kubernetes Service (AKS) simplifies deploying a managed Kubernetes cluster
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        AKS Cluster                               │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │              Control Plane (Azure Managed)                  │ │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐      │ │
-│  │  │API Server│ │Controller│ │Scheduler │ │  etcd    │      │ │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘      │ │
-│  │                      FREE (Azure manages)                   │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              │                                   │
-│                              ▼                                   │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │                    Node Pools (You pay)                     │ │
-│  │                                                              │ │
-│  │  System Pool              User Pool 1         User Pool 2   │ │
-│  │  ┌────┐ ┌────┐          ┌────┐ ┌────┐      ┌────┐ ┌────┐  │ │
-│  │  │Node│ │Node│          │Node│ │Node│      │Node│ │Node│  │ │
-│  │  └────┘ └────┘          └────┘ └────┘      └────┘ └────┘  │ │
-│  │  (CoreDNS,              (Apps)             (GPU Apps)      │ │
-│  │   kube-proxy)                                               │ │
-│  └────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
++---------------------------------------------------------------+
+|                         AKS Cluster                           |
+|                                                               |
+|  +---------------------------------------------------------+  |
+|  |             Control Plane (Azure Managed)               |  |
+|  |  +----------+ +----------+ +----------+ +----------+    |  |
+|  |  |API Server| |Controller| |Scheduler | |   etcd   |    |  |
+|  |  +----------+ +----------+ +----------+ +----------+    |  |
+|  |                    FREE (Azure manages)                 |  |
+|  +---------------------------------------------------------+  |
+|                              |                                |
+|                              v                                |
+|  +---------------------------------------------------------+  |
+|  |                   Node Pools (You pay)                  |  |
+|  |                                                         |  |
+|  |  System Pool           User Pool 1       User Pool 2    |  |
+|  |  +----+ +----+        +----+ +----+     +----+ +----+   |  |
+|  |  |Node| |Node|        |Node| |Node|     |Node| |Node|   |  |
+|  |  +----+ +----+        +----+ +----+     +----+ +----+   |  |
+|  |  (CoreDNS,            (Apps)            (GPU Apps)      |  |
+|  |   kube-proxy)                                           |  |
+|  +---------------------------------------------------------+  |
++---------------------------------------------------------------+
 ```
 
 ## Cluster Configuration
@@ -69,19 +69,19 @@ Azure Kubernetes Service (AKS) simplifies deploying a managed Kubernetes cluster
 
 ```
 Kubenet:
-┌─────────────────────────────────────┐
-│ Node IP: 10.0.1.4                   │
-│  ├── Pod: 10.244.0.1 (NAT'd)       │
-│  └── Pod: 10.244.0.2 (NAT'd)       │
-└─────────────────────────────────────┘
++-------------------------------------+
+| Node IP: 10.0.1.4                   |
+|  +-- Pod: 10.244.0.1 (NAT'd)        |
+|  +-- Pod: 10.244.0.2 (NAT'd)        |
++-------------------------------------+
 Pods use different IP range, NAT to node IP
 
 Azure CNI:
-┌─────────────────────────────────────┐
-│ Node IP: 10.0.1.4                   │
-│  ├── Pod: 10.0.1.5 (VNet IP)       │
-│  └── Pod: 10.0.1.6 (VNet IP)       │
-└─────────────────────────────────────┘
++-------------------------------------+
+| Node IP: 10.0.1.4                   |
+|  +-- Pod: 10.0.1.5 (VNet IP)        |
+|  +-- Pod: 10.0.1.6 (VNet IP)        |
++-------------------------------------+
 Pods get IPs from VNet subnet directly
 ```
 
@@ -113,15 +113,15 @@ az aks nodepool add \
 
 ```
 Cluster Autoscaler:
-┌─────────────────────────────────────────────────────┐
-│  Node Pool: apps                                     │
-│  Min: 2 nodes                                        │
-│  Max: 10 nodes                                       │
-│  Current: 5 nodes                                    │
-│                                                      │
-│  Scale up: Pending pods need resources              │
-│  Scale down: Nodes underutilized (< 50% for 10min) │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|  Node Pool: apps                                    |
+|  Min: 2 nodes                                       |
+|  Max: 10 nodes                                      |
+|  Current: 5 nodes                                   |
+|                                                     |
+|  Scale up: Pending pods need resources              |
+|  Scale down: Nodes underutilized (< 50% for 10min)  |
++-----------------------------------------------------+
 ```
 
 ## Virtual Nodes
@@ -129,18 +129,18 @@ Cluster Autoscaler:
 Serverless Kubernetes using Azure Container Instances.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    AKS Cluster                       │
-│                                                      │
-│  Regular Node Pool      Virtual Node (ACI)          │
-│  ┌────┐ ┌────┐         ┌─────────────────────┐     │
-│  │Node│ │Node│         │ Serverless Pods     │     │
-│  │    │ │    │         │ (burst to ACI)      │     │
-│  └────┘ └────┘         └─────────────────────┘     │
-│                                                      │
-│  For: Long-running      For: Burst workloads,      │
-│       workloads               quick scaling         │
-└─────────────────────────────────────────────────────┘
++-----------------------------------------------------+
+|                     AKS Cluster                     |
+|                                                     |
+|  Regular Node Pool      Virtual Node (ACI)          |
+|  +----+ +----+         +---------------------+      |
+|  |Node| |Node|         | Serverless Pods     |      |
+|  |    | |    |         | (burst to ACI)      |      |
+|  +----+ +----+         +---------------------+      |
+|                                                     |
+|  For: Long-running      For: Burst workloads,       |
+|       workloads               quick scaling         |
++-----------------------------------------------------+
 ```
 
 ## Networking
@@ -282,14 +282,14 @@ Enforce cluster compliance using Azure Policy.
 
 ```
 Azure Monitor
-    │
-    ├── Container Insights
-    │   ├── Metrics (CPU, Memory, Network)
-    │   ├── Logs (stdout, stderr)
-    │   └── Inventory (pods, nodes, containers)
-    │
-    └── Log Analytics Workspace
-        └── KQL queries for analysis
+    |
+    +-- Container Insights
+    |   +-- Metrics (CPU, Memory, Network)
+    |   +-- Logs (stdout, stderr)
+    |   +-- Inventory (pods, nodes, containers)
+    |
+    +-- Log Analytics Workspace
+        +-- KQL queries for analysis
 ```
 
 ### Key Metrics
@@ -305,11 +305,11 @@ Azure Monitor
 
 ```
 Git Repository                    AKS Cluster
-┌─────────────────┐   Flux      ┌─────────────────┐
-│ manifests/      │ ─────────▶ │ Deployed        │
-│   deployment.yaml│  sync      │ resources       │
-│   service.yaml  │            │                 │
-└─────────────────┘            └─────────────────┘
++-----------------+   Flux      +-----------------+
+| manifests/      | ---------> | Deployed        |
+|   deployment.yaml|  sync      | resources       |
+|   service.yaml  |            |                 |
++-----------------+            +-----------------+
 ```
 
 ## CLI Quick Reference

@@ -30,27 +30,27 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         API Gateway                              │
-│                                                                 │
-│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
-│   │   Stage:    │    │   Stage:    │    │   Stage:    │        │
-│   │    dev      │    │   staging   │    │    prod     │        │
-│   └─────────────┘    └─────────────┘    └─────────────┘        │
-│          │                  │                  │                │
-│          └──────────────────┴──────────────────┘                │
-│                             │                                   │
-│   ┌─────────────────────────┴─────────────────────────┐        │
-│   │                    Resources                       │        │
-│   │   /users                                          │        │
-│   │   ├── GET  → Lambda: list-users                   │        │
-│   │   ├── POST → Lambda: create-user                  │        │
-│   │   └── /{id}                                       │        │
-│   │       ├── GET    → Lambda: get-user               │        │
-│   │       ├── PUT    → Lambda: update-user            │        │
-│   │       └── DELETE → Lambda: delete-user            │        │
-│   └───────────────────────────────────────────────────┘        │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                          API Gateway                             |
+|                                                                  |
+|   +--------------+    +--------------+    +--------------+       |
+|   |   Stage:     |    |   Stage:     |    |   Stage:     |       |
+|   |    dev       |    |   staging    |    |    prod      |       |
+|   +--------------+    +--------------+    +--------------+       |
+|          |                   |                   |               |
+|          +-------------------+-------------------+               |
+|                              |                                   |
+|   +--------------------------------------------------------+    |
+|   |                       Resources                        |    |
+|   |   /users                                               |    |
+|   |   +-- GET  -> Lambda: list-users                       |    |
+|   |   +-- POST -> Lambda: create-user                      |    |
+|   |   +-- /{id}                                            |    |
+|   |       +-- GET    -> Lambda: get-user                   |    |
+|   |       +-- PUT    -> Lambda: update-user                |    |
+|   |       +-- DELETE -> Lambda: delete-user                |    |
+|   +--------------------------------------------------------+    |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -69,8 +69,8 @@
 
 ### Lambda Proxy Integration
 ```
-Request → API Gateway → Lambda (receives full event)
-                              │
+Request -> API Gateway -> Lambda (receives full event)
+                               |
                     {
                       "httpMethod": "GET",
                       "path": "/users/123",
@@ -99,13 +99,13 @@ Request → API Gateway → Lambda (receives full event)
 
 ```
 API Definition
-     │
-     ▼
+     |
+     v
 Deployment
-     │
-     ├── Stage: dev    → https://xxx.execute-api.region.amazonaws.com/dev
-     ├── Stage: staging → https://xxx.execute-api.region.amazonaws.com/staging
-     └── Stage: prod   → https://xxx.execute-api.region.amazonaws.com/prod
+     |
+     +-- Stage: dev     -> https://xxx.execute-api.region.amazonaws.com/dev
+     +-- Stage: staging -> https://xxx.execute-api.region.amazonaws.com/staging
+     +-- Stage: prod    -> https://xxx.execute-api.region.amazonaws.com/prod
 ```
 
 ### Stage Variables
@@ -122,8 +122,8 @@ Use for:
 ### Canary Deployments
 ```
 prod stage:
-├── 90% → Current deployment
-└── 10% → Canary deployment
++-- 90% -> Current deployment
++-- 10% -> Canary deployment
 
 Promote after testing
 ```
@@ -134,14 +134,14 @@ Promote after testing
 
 ### IAM
 ```
-Client → SigV4 signed request → API Gateway → Validate IAM
+Client -> SigV4 signed request -> API Gateway -> Validate IAM
 ```
 
 ### Lambda Authorizer (Custom)
 ```
-Client → Token → API Gateway → Lambda Authorizer → Policy
-                                                      │
-                                               Allow/Deny
+Client -> Token -> API Gateway -> Lambda Authorizer -> Policy
+                                                          |
+                                                    Allow/Deny
 ```
 
 **Token-based:**
@@ -168,12 +168,12 @@ exports.handler = async (event) => {
 
 ### Cognito User Pools
 ```
-Client → JWT token → API Gateway → Cognito → Validate
+Client -> JWT token -> API Gateway -> Cognito -> Validate
 ```
 
 ### API Keys
 ```
-Client → x-api-key header → API Gateway → Validate key
+Client -> x-api-key header -> API Gateway -> Validate key
 ```
 
 For:
@@ -192,24 +192,24 @@ For:
 ### Stage Limits
 ```
 Stage: prod
-├── Rate limit: 1000 req/sec
-└── Burst limit: 2000 requests
++-- Rate limit: 1000 req/sec
++-- Burst limit: 2000 requests
 ```
 
 ### Method Limits
 ```
 GET /users
-├── Rate limit: 100 req/sec
-└── Burst limit: 200 requests
++-- Rate limit: 100 req/sec
++-- Burst limit: 200 requests
 ```
 
 ### Usage Plans
 ```
 Usage Plan: Basic
-├── API Keys: [key1, key2]
-├── Throttle: 100 req/sec
-├── Burst: 200
-└── Quota: 10,000 req/month
++-- API Keys: [key1, key2]
++-- Throttle: 100 req/sec
++-- Burst: 200
++-- Quota: 10,000 req/month
 ```
 
 ---
@@ -217,12 +217,12 @@ Usage Plan: Basic
 ## Caching (REST API only)
 
 ```
-Client → API Gateway → Cache HIT → Return cached response
-                          │
-                     Cache MISS
-                          │
-                          ▼
-                      Backend → Cache response → Return
+Client -> API Gateway -> Cache HIT -> Return cached response
+                            |
+                       Cache MISS
+                            |
+                            v
+                        Backend -> Cache response -> Return
 ```
 
 - Cache size: 0.5 GB to 237 GB
@@ -272,11 +272,11 @@ aws apigateway flush-stage-cache \
 ## CORS
 
 ```
-Browser → Preflight (OPTIONS) → API Gateway
-                                    │
-                           Access-Control-Allow-Origin: *
-                           Access-Control-Allow-Methods: GET, POST
-                           Access-Control-Allow-Headers: Content-Type
+Browser -> Preflight (OPTIONS) -> API Gateway
+                                      |
+                             Access-Control-Allow-Origin: *
+                             Access-Control-Allow-Methods: GET, POST
+                             Access-Control-Allow-Headers: Content-Type
 ```
 
 Enable CORS:
@@ -291,15 +291,15 @@ Enable CORS:
 Bidirectional communication.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     WebSocket API                               │
-│                                                                 │
-│   $connect    → Lambda: onConnect (store connectionId)         │
-│   $disconnect → Lambda: onDisconnect (remove connectionId)     │
-│   $default    → Lambda: onMessage (handle messages)            │
-│   sendmessage → Lambda: sendMessage (custom route)             │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                       WebSocket API                              |
+|                                                                  |
+|   $connect    -> Lambda: onConnect (store connectionId)          |
+|   $disconnect -> Lambda: onDisconnect (remove connectionId)      |
+|   $default    -> Lambda: onMessage (handle messages)             |
+|   sendmessage -> Lambda: sendMessage (custom route)              |
+|                                                                  |
++------------------------------------------------------------------+
 ```
 
 ### Send message to client
@@ -322,18 +322,18 @@ client.post_to_connection(
 API accessible only from VPC.
 
 ```
-┌─────────────────────────────────────────┐
-│                  VPC                    │
-│                                         │
-│   ┌─────────┐     ┌─────────────────┐  │
-│   │   EC2   │────▶│ VPC Endpoint    │  │
-│   │         │     │ (Interface)     │  │
-│   └─────────┘     └────────┬────────┘  │
-│                            │           │
-└────────────────────────────│───────────┘
-                             │
-                             ▼
-                    Private API Gateway
++------------------------------------------+
+|                   VPC                    |
+|                                          |
+|   +-----------+     +-----------------+  |
+|   |    EC2    |---->|  VPC Endpoint   |  |
+|   |           |     |   (Interface)   |  |
+|   +-----------+     +--------+--------+  |
+|                              |           |
++------------------------------|------------+
+                               |
+                               v
+                     Private API Gateway
 ```
 
 Resource policy required:
