@@ -29,11 +29,11 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |                                                                                  |
 |  +------------------------------------------------------------------------+      |
 |  |                                                                        |      |
-|  |  +-----------+    +-----------+    +-----------+    +-----------+     |      |
-|  |  |   Auth    |--->|   Quota   |--->|  Request  |--->|  Billing  |     |      |
-|  |  |  Service  |    |  Manager  |    | Validator |    |  Metering |     |      |
-|  |  | (API Key) |    | (Limits)  |    | (Schema)  |    | (Tokens)  |     |      |
-|  |  +-----------+    +-----------+    +-----------+    +-----------+     |      |
+|  |  +-----------+    +-----------+    +-----------+    +-----------+      |      |
+|  |  |   Auth    |--->|   Quota   |--->|  Request  |--->|  Billing  |      |      |
+|  |  |  Service  |    |  Manager  |    | Validator |    |  Metering |      |      |
+|  |  | (API Key) |    | (Limits)  |    | (Schema)  |    | (Tokens)  |      |      |
+|  |  +-----------+    +-----------+    +-----------+    +-----------+      |      |
 |  |                                                                        |      |
 |  +------------------------------------------------------------------------+      |
 |                                    |                                             |
@@ -46,7 +46,7 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  |                     MODEL ROUTER / SMART GATEWAY                       |      |
 |  |                                                                        |      |
 |  |   * Complexity Detection (simple query vs deep reasoning)              |      |
-|  |   * Model Selection (GPT-4 vs GPT-4o, Claude Opus vs Sonnet)          |      |
+|  |   * Model Selection (GPT-4 vs GPT-4o, Claude Opus vs Sonnet)           |      |
 |  |   * KV-Cache Aware Routing (route to server with cached context)       |      |
 |  |   * Load-Based Distribution (GPU utilization, queue depth)             |      |
 |  |   * Latency Optimization (TTFT targets)                                |      |
@@ -69,7 +69,7 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  |                        KUBERNETES CLUSTER                              |      |
 |  |                                                                        |      |
 |  |  +------------------+  +------------------+  +------------------+      |      |
-|  |  |  Inference Pod   |  |  Inference Pod   |  |  Inference Pod   | ...  |      |
+|  |  |  Inference Pod   |  |  Inference Pod   |  |  Inference Pod   |      |      |
 |  |  |                  |  |                  |  |                  |      |      |
 |  |  |  +------------+  |  |  +------------+  |  |  +------------+  |      |      |
 |  |  |  | vLLM /     |  |  |  | vLLM /     |  |  |  | vLLM /     |  |      |      |
@@ -80,7 +80,7 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  |  |  +------------+  |  |  +------------+  |  |  +------------+  |      |      |
 |  |  +------------------+  +------------------+  +------------------+      |      |
 |  |                                                                        |      |
-|  |  [HPA: GPU Util] [VPA: Memory] [Cluster Autoscaler] [Prometheus]      |      |
+|  |  [HPA: GPU Util] [VPA: Memory] [Cluster Autoscaler] [Prometheus]       |      |
 |  +------------------------------------------------------------------------+      |
 |                                    |                                             |
 |                                    v                                             |
@@ -92,7 +92,7 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  |                        8-GPU SERVER (DGX/HGX)                          |      |
 |  |                                                                        |      |
 |  |  +------+  +------+  +------+  +------+  +------+  +------+  +------+  |      |
-|  |  | H100 |  | H100 |  | H100 |  | H100 |  | H100 |  | H100 |  | H100 |..|      |
+|  |  | H100 |  | H100 |  | H100 |  | H100 |  | H100 |  | H100 |  | H100 |  |      |
 |  |  | 80GB |  | 80GB |  | 80GB |  | 80GB |  | 80GB |  | 80GB |  | 80GB |  |      |
 |  |  +--+---+  +--+---+  +--+---+  +--+---+  +--+---+  +--+---+  +--+---+  |      |
 |  |     |         |         |         |         |         |         |      |      |
@@ -103,7 +103,7 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  |                     |   (1.8 TB/s)    |                                |      |
 |  |                     +-----------------+                                |      |
 |  |                                                                        |      |
-|  |  [Memory: 640GB HBM3] [Compute: 15,832 TFLOPS FP8] [Power: 5.6 kW]    |      |
+|  |  [Memory: 640GB HBM3] [Compute: 15,832 TFLOPS FP8] [Power: 5.6 kW]     |      |
 |  +------------------------------------------------------------------------+      |
 |                                    |                                             |
 |                                    v                                             |
@@ -129,7 +129,7 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  |         | (64 GPUs) |      | (64 GPUs) |      | (64 GPUs) |            |      |
 |  |         +-----------+      +-----------+      +-----------+            |      |
 |  |                                                                        |      |
-|  |  [Latency: 1-2 us] [Throughput: 95%+ efficiency] [Zero packet loss]   |      |
+|  |  [Latency: 1-2 us] [Throughput: 95%+ efficiency] [Zero packet loss]    |      |
 |  +------------------------------------------------------------------------+      |
 |                                    |                                             |
 |                                    v                                             |
@@ -149,10 +149,10 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 +==================================================================================+
 
 
-+==================================================================================+
-|                                                                                  |
-|                              SUPPORTING SYSTEMS                                  |
-|                                                                                  |
++===================================================================================+
+|                                                                                   |
+|                              SUPPORTING SYSTEMS                                   |
+|                                                                                   |
 |  +------------------+ +------------------+ +------------------+ +---------------+ |
 |  |  OBSERVABILITY   | |  MODEL STORAGE   | |  TRAINING INFRA  | | SAFETY SYSTEMS| |
 |  +------------------+ +------------------+ +------------------+ +---------------+ |
@@ -161,8 +161,8 @@ This is the reference architecture used by OpenAI, Anthropic, Google, Meta, and 
 |  | * GPU metrics    | | * Version Control| | * Lustre/GPFS    | | * Red Teaming | |
 |  | * Request traces | | * A/B Deployment | | * Data Pipeline  | | * Validation  | |
 |  +------------------+ +------------------+ +------------------+ +---------------+ |
-|                                                                                  |
-+==================================================================================+
+|                                                                                   |
++===================================================================================+
 ```
 
 ### Request Flow Summary
