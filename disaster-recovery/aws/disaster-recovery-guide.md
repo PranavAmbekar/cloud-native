@@ -4,14 +4,15 @@
 
 ## Real-World Context
 
-In 2024, geopolitical conflicts demonstrated that even major cloud data centers can become inaccessible due to war, natural disasters, or infrastructure attacks. When an AWS region goes offline:
+In 2026, during the US-Israel-Iran conflict, Iranian forces bombed the AWS Middle East (Bahrain) data center. Companies who had deployed their infrastructure in `me-south-1` for low latency to Middle Eastern customers faced catastrophic outages:
 
-- Applications become unreachable
-- Data may be temporarily or permanently lost
-- Business operations halt
-- Customer trust erodes
+- Applications became completely unreachable
+- Data stored only in that region was lost or inaccessible
+- Business operations halted for days or weeks
+- Customers lost trust and moved to competitors
+- Companies without DR plans faced existential threats
 
-**This guide provides a battle-tested approach to ensure your applications survive regional outages with zero downtime.**
+**This guide provides a battle-tested approach to ensure your applications survive regional outages with zero downtime - even if an entire data center is destroyed.**
 
 ## Key Concepts
 
