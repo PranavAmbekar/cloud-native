@@ -1295,6 +1295,458 @@ spec:
 
 ---
 
+## 12. Deep Technical Internals
+
+> **This section dives into the implementation details that power modern AI systems - the algorithms, memory layouts, and architectural decisions that make inference at scale possible.**
+
+### 12.1 FlashAttention: How GPU Memory Hierarchy Changes Everything
+
+The attention mechanism is the computational heart of transformers, but it has a fundamental problem: it requires O(N²) memory for sequence length N. For a 32K context window, this means storing a 32,768 × 32,768 attention matrix - over 4 billion floating point numbers, or 8GB just for one attention computation. This doesn't fit in GPU SRAM, forcing constant trips to slow HBM memory.
+
+FlashAttention, developed by Tri Dao at Stanford, solves this by exploiting the GPU memory hierarchy. The key insight is that GPUs have three levels of memory with vastly different speeds: HBM (High Bandwidth Memory) at 3.35 TB/s on H100, L2 cache at ~12 TB/s, and SRAM at ~19 TB/s. The problem is that HBM has 80GB capacity while SRAM has only 20MB - but SRAM is 5-6x faster.
+
+The algorithm works by processing attention in tiles that fit entirely in SRAM. Instead of computing the full N×N attention matrix, FlashAttention loads small blocks of queries, keys, and values into SRAM, computes partial attention scores, and maintains running statistics to eventually produce the correct output. The mathematical trick is "online softmax" - a way to compute softmax incrementally without seeing all values first. The algorithm maintains two accumulators: the running maximum seen so far, and the running sum of exponentials. When processing a new block, it rescales previous computations based on the new maximum, ensuring numerical stability.
+
+The performance impact is dramatic. On H100, FlashAttention-2 achieves 230 TFLOPS for attention computation compared to 85 TFLOPS for standard PyTorch attention - a 2.7x speedup. More importantly, it reduces memory usage from O(N²) to O(N), enabling context windows of 128K+ tokens that would otherwise be impossible. For a 70B model with 32K context, standard attention requires ~120GB for the attention matrices alone; FlashAttention needs only ~2GB.
+
+The technique is now standard across all major inference frameworks. vLLM, TensorRT-LLM, and TGI all use FlashAttention variants. The original implementation is open source at github.com/Dao-AILab/flash-attention, and NVIDIA has integrated optimized versions into their cuDNN library.
+
+```
++------------------------------------------------------------------+
+|          FLASH ATTENTION PERFORMANCE (H100 SXM)                  |
++------------------------------------------------------------------+
+| Sequence Length |  Standard   | FlashAttention-2 |   Speedup     |
++------------------------------------------------------------------+
+|        512      |   15 ms     |      4 ms        |     3.8x      |
+|      2,048      |  180 ms     |     20 ms        |     9.0x      |
+|      8,192      |    OOM      |     95 ms        |     N/A       |
+|     32,768      |    OOM      |    400 ms        |     N/A       |
++------------------------------------------------------------------+
+| OOM = Out of Memory (standard attention can't fit in 80GB HBM)   |
++------------------------------------------------------------------+
+```
+
+### 12.2 PagedAttention: Virtual Memory Meets KV Cache
+
+The KV cache stores the key and value tensors from previous tokens so they don't need to be recomputed. For a 70B model with 80 layers, 64 attention heads, and 128-dimensional head size, each token requires 2 × 80 × 64 × 128 × 2 = 2.6MB of KV cache. A 4K context conversation uses 10GB just for KV cache.
+
+The traditional approach pre-allocates a contiguous memory block for the maximum possible sequence length per request. This leads to massive waste: if you allocate for 4K tokens but the actual response is 200 tokens, you've wasted 95% of that memory. Across many concurrent requests, this internal fragmentation typically wastes 60-80% of GPU memory.
+
+PagedAttention, introduced in the vLLM paper, applies operating system virtual memory concepts to KV cache management. Instead of contiguous allocation, memory is divided into fixed-size blocks (typically 16 tokens each). Each request has a "block table" that maps logical block indices to physical memory locations - exactly like an OS page table mapping virtual to physical addresses.
+
+When a request generates tokens, blocks are allocated on-demand from a free list. When a request completes, its blocks return to the free list immediately. There's no fragmentation because every block is the same size and blocks don't need to be contiguous. This simple change increases effective GPU memory utilization from ~20% to ~90%, enabling 3-4x more concurrent requests on the same hardware.
+
+PagedAttention also enables "prefix caching" through copy-on-write semantics. When multiple requests share the same system prompt, they can share the same physical KV cache blocks until their outputs diverge. This is particularly valuable for applications where all requests start with the same instructions - the system prompt's KV cache is computed once and shared across thousands of requests.
+
+The implementation requires modified attention kernels that read from non-contiguous memory. Instead of a single pointer offset, the kernel must consult the block table, look up each physical block, and gather the correct key-value pairs. This adds complexity but the memory savings far outweigh the minimal overhead.
+
+```
++------------------------------------------------------------------+
+|                   MEMORY EFFICIENCY COMPARISON                    |
++------------------------------------------------------------------+
+|                                                                   |
+|  Traditional Allocation (pre-allocate max length):                |
+|  +--------------------+------+--------------------+------+        |
+|  | Request 1 KV 2.3GB | XXXX | Request 2 KV 1.8GB | XXXX |        |
+|  +--------------------+------+--------------------+------+        |
+|           |              |              |            |            |
+|       allocated      wasted        allocated     wasted           |
+|                                                                   |
+|  Efficiency: ~25% (allocate 8GB, use 2GB)                         |
+|                                                                   |
+|  PagedAttention (block allocation):                               |
+|  +----+----+----+----+----+----+----+----+----+----+----+         |
+|  | R1 | R2 | R1 | R3 | R2 | R1 | R3 | R2 | R3 | R1 |free|         |
+|  +----+----+----+----+----+----+----+----+----+----+----+         |
+|                                                                   |
+|  Efficiency: ~95% (allocate what you need, when you need it)      |
+|                                                                   |
+|  Result: 3-4x more concurrent requests on same GPU                |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+For implementation details, see the vLLM paper "Efficient Memory Management for Large Language Model Serving with PagedAttention" and the source at github.com/vllm-project/vllm.
+
+### 12.3 Tensor Parallelism: Splitting Layers Across GPUs
+
+A 70B parameter model requires 140GB in FP16 just for weights, exceeding single GPU capacity. Tensor parallelism solves this by splitting each layer across multiple GPUs, with each GPU holding a fraction of every layer's weights.
+
+The key insight is that matrix multiplications can be partitioned. For a linear layer Y = XW, if we split W into columns [W₁|W₂|W₃|W₄] across 4 GPUs, each GPU computes Y_i = X × W_i independently. The outputs are then concatenated: Y = [Y₁|Y₂|Y₃|Y₄]. This "column parallelism" requires no communication during the forward pass - each GPU works independently.
+
+The challenge comes with the next layer. If the first layer's output is partitioned, the second layer's input is partitioned. For row-partitioned computation, Y = X₁W₁ + X₂W₂ + X₃W₃ + X₄W₄, we need to sum the partial results across GPUs. This requires an "all-reduce" collective communication operation.
+
+The standard pattern for transformer MLPs is: Column Parallel (first linear) → Activation → Row Parallel (second linear). This minimizes communication to one all-reduce per MLP block. Attention layers use similar patterns, with query/key/value projections column-parallel and output projection row-parallel.
+
+The all-reduce operation uses a ring algorithm where each GPU sends data to its neighbor in a ring topology. For N GPUs with data size D, each GPU sends and receives 2×(N-1)/N × D bytes total. With NVLink providing 1.8 TB/s bidirectional bandwidth between GPUs, a 100MB tensor all-reduce across 8 GPUs takes under 1ms.
+
+```
++------------------------------------------------------------------+
+|                   TENSOR PARALLELISM LAYOUT                       |
++------------------------------------------------------------------+
+|                                                                   |
+|  MLP Layer Pattern:                                               |
+|                                                                   |
+|  Input X (replicated on all GPUs)                                 |
+|       |                                                           |
+|       v                                                           |
+|  +----+----+----+----+                                            |
+|  |Col |Col |Col |Col |   First Linear (Column Parallel)           |
+|  | 0  | 1  | 2  | 3  |   No communication needed                  |
+|  +----+----+----+----+                                            |
+|       |                                                           |
+|       v                                                           |
+|  Activation (GELU) - local                                        |
+|       |                                                           |
+|       v                                                           |
+|  +----+----+----+----+                                            |
+|  |Row |Row |Row |Row |   Second Linear (Row Parallel)             |
+|  | 0  | 1  | 2  | 3  |   Partial sums computed locally            |
+|  +----+----+----+----+                                            |
+|       |                                                           |
+|       v                                                           |
+|  [=== ALL-REDUCE ===]   Sum partial results across GPUs           |
+|       |                                                           |
+|       v                                                           |
+|  Output Y (replicated on all GPUs)                                |
+|                                                                   |
+|  Communication: 1 all-reduce per MLP block                        |
+|  With 8 GPUs on NVLink: ~0.5ms per layer                          |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+For implementation, NVIDIA's Megatron-LM (github.com/NVIDIA/Megatron-LM) is the reference. It's used by most companies training large models and includes optimized tensor parallel primitives.
+
+### 12.4 FP8 Quantization: Half the Bits, Double the Speed
+
+H100 and B200 GPUs include dedicated Tensor Cores for FP8 (8-bit floating point) computation, offering 2x the FLOPS of FP16/BF16. NVIDIA's Transformer Engine library enables FP8 training and inference with minimal accuracy loss through careful scaling.
+
+FP8 comes in two formats: E4M3 (4 exponent bits, 3 mantissa bits) with range ±448, and E5M2 (5 exponent bits, 2 mantissa bits) with range ±57,344. E4M3 offers more precision and is used for weights and activations during forward passes. E5M2 provides more range and handles gradients during backpropagation, which can have larger outlier values.
+
+The challenge is that 8 bits provide very limited dynamic range. A BF16 tensor with values spanning 0.001 to 1000 can't be directly cast to FP8 without massive precision loss. The solution is per-tensor scaling: multiply all values by a scale factor that maps the tensor's range into FP8's representable range, perform computation in FP8, then divide by the scale.
+
+The clever innovation is "delayed scaling." Computing the optimal scale requires finding the tensor's maximum absolute value, which is expensive. Delayed scaling uses the scale computed from the previous training iteration, based on the assumption that tensor distributions don't change dramatically between iterations. This eliminates the scaling overhead while maintaining accuracy.
+
+In practice, FP8 training achieves within 0.1% of BF16 perplexity on language models. The memory savings come from storing weights and activations in 8 bits instead of 16, halving memory requirements. Combined with 2x Tensor Core throughput, FP8 delivers roughly 2x end-to-end training speedup.
+
+```
++------------------------------------------------------------------+
+|                    FP8 FORMAT COMPARISON                          |
++------------------------------------------------------------------+
+|                                                                   |
+|  E4M3 (for forward pass):                                         |
+|  +---+--------+-------+                                           |
+|  | S | E (4b) | M (3b)|    Range: ±448                            |
+|  +---+--------+-------+    Precision: 8 distinct mantissa values  |
+|  |                         Best for: Weights, activations         |
+|  |                                                                |
+|  E5M2 (for backward pass):                                        |
+|  +---+----------+-----+                                           |
+|  | S |  E (5b)  |M(2b)|    Range: ±57,344                         |
+|  +---+----------+-----+    Precision: 4 distinct mantissa values  |
+|                            Best for: Gradients (can have outliers)|
+|                                                                   |
++------------------------------------------------------------------+
+|                                                                   |
+|  PERFORMANCE COMPARISON (H100):                                   |
+|                                                                   |
+|  Operation       |   BF16   |   FP8    |  Speedup                 |
+|  ----------------+----------+----------+-----------               |
+|  GEMM TFLOPS     |  1,979   |  3,958   |   2.0x                   |
+|  Memory BW       |  3.35TB/s|  3.35TB/s|   1.0x                   |
+|  Effective BW*   |  3.35TB/s|  6.70TB/s|   2.0x                   |
+|                                                                   |
+|  * Half the bytes means twice the effective data throughput       |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+NVIDIA's Transformer Engine (github.com/NVIDIA/TransformerEngine) provides drop-in FP8 support for PyTorch models.
+
+### 12.5 Speculative Decoding: Parallelizing the Unparallelizable
+
+Autoregressive decoding is inherently sequential: each token depends on all previous tokens. With large models taking 30-50ms per token, generating a 500-token response takes 15-25 seconds. Speculative decoding breaks this barrier by using a small "draft" model to propose multiple tokens that the large "target" model verifies in parallel.
+
+The algorithm works as follows: A draft model (e.g., 7B parameters) quickly generates K candidate tokens (typically K=4-5). These candidates are then fed to the target model (e.g., 70B) as a single forward pass, which computes the probability of each token given all preceding tokens. Through rejection sampling, we accept tokens where the draft model's predictions match the target model's distribution, and reject where they diverge.
+
+The mathematical guarantee is crucial: the output distribution is identical to sampling directly from the target model. This isn't an approximation - through careful probability adjustment when rejecting tokens, speculative decoding produces exactly the same distribution of outputs as standard decoding, just faster.
+
+The speedup depends on the acceptance rate - how often the draft model's predictions match the target model's. For well-aligned models (same training data, same architecture family), acceptance rates of 70-80% are common. This means 3-4 tokens accepted per verification pass on average, yielding 1.5-2x speedup for latency-sensitive single-request scenarios.
+
+The technique is most valuable for interactive applications where latency matters more than throughput. For batch processing with many concurrent requests, standard batching already achieves high GPU utilization, and speculative decoding's benefits diminish.
+
+An alternative approach is Medusa, which attaches multiple small "speculation heads" directly to the target model rather than using a separate draft model. Each head predicts a different future token position (+1, +2, +3, etc.). This eliminates the need to load a separate draft model into memory and allows the speculation heads to leverage the target model's hidden states directly.
+
+```
++------------------------------------------------------------------+
+|                 SPECULATIVE DECODING FLOW                         |
++------------------------------------------------------------------+
+|                                                                   |
+|  Standard decoding (sequential):                                  |
+|                                                                   |
+|  [70B]-->[70B]-->[70B]-->[70B]-->[70B]                            |
+|   50ms   50ms    50ms    50ms    50ms  = 250ms for 5 tokens       |
+|                                                                   |
+|  Speculative decoding:                                            |
+|                                                                   |
+|  Step 1: Draft generates candidates quickly                       |
+|  [7B]->[7B]->[7B]->[7B] = 20ms total                              |
+|  Candidates: "The", "quick", "brown", "fox"                       |
+|                                                                   |
+|  Step 2: Target verifies ALL in one forward pass                  |
+|  [========== 70B verify all 4 ===========] = 55ms                 |
+|                                                                   |
+|  Step 3: Accept/reject via probability comparison                 |
+|  "The" -> Accept (p_target > p_draft)                             |
+|  "quick" -> Accept                                                |
+|  "brown" -> Reject (resample from target)                         |
+|  "fox" -> Not evaluated (prior token rejected)                    |
+|                                                                   |
+|  Result: 3 tokens in 75ms instead of 150ms = 2x speedup           |
+|                                                                   |
++------------------------------------------------------------------+
+|                                                                   |
+|  ACCEPTANCE RATES BY TASK TYPE:                                   |
+|                                                                   |
+|  Task              | Accept Rate | Effective Speedup              |
+|  ------------------+-------------+-------------------             |
+|  Code generation   |    72%      |      1.8x                      |
+|  Q&A (factual)     |    78%      |      2.0x                      |
+|  Creative writing  |    65%      |      1.6x                      |
+|  Math/reasoning    |    52%      |      1.4x                      |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+### 12.6 Continuous Batching: Why vLLM is 10x Faster
+
+Traditional batching waits for a fixed batch to fill, processes all requests together, then waits for the slowest request to finish before starting the next batch. This creates two sources of waste: waiting time at batch boundaries, and padding shorter sequences to match the longest.
+
+Continuous batching (also called "iteration-level batching") eliminates both. The scheduler runs a tight loop: every 20-30ms, it decides which requests to process next. When a request completes (generates end-of-sequence), its slot immediately becomes available for a waiting request. There's no waiting for batch boundaries.
+
+The vLLM scheduler maintains three queues: waiting (new requests), running (actively generating), and swapped (temporarily moved to CPU memory). Each iteration, the scheduler:
+
+1. Tries to swap in previously evicted requests from CPU
+2. Admits new requests from the waiting queue if memory allows
+3. Allocates KV cache blocks for running requests
+4. If memory is exhausted, preempts the most recently started request (LIFO policy, since newer requests have less compute invested)
+
+The preemption mechanism is crucial for handling memory pressure gracefully. Instead of rejecting requests or crashing when GPU memory fills, the scheduler can temporarily evict requests to CPU memory (preserving their KV cache) or force them to restart (discarding KV cache). This enables the system to handle burst traffic while maintaining responsiveness.
+
+Prefill (processing the input prompt) and decode (generating output tokens) have very different compute characteristics. Prefill processes many tokens in parallel and is compute-bound. Decode processes one token per sequence and is memory-bandwidth-bound. vLLM handles both in the same batch by separating them into different code paths within a single forward pass.
+
+The result is dramatic: vLLM achieves 2-24x higher throughput than HuggingFace TGI depending on workload characteristics. The improvement is largest for high request rates with variable-length outputs, where traditional batching wastes the most resources on padding and synchronization.
+
+```
++------------------------------------------------------------------+
+|              BATCHING STRATEGY COMPARISON                         |
++------------------------------------------------------------------+
+|                                                                   |
+|  Static Batching:                                                 |
+|  +------------------+------+                                      |
+|  | Request A (100t) | XXXX | <- waits for A to finish             |
+|  +------------------+------+                                      |
+|  | Request B (50t)  | XXXXXXXX | <- padded, wasted compute        |
+|  +--------------+---+----------+                                  |
+|  | Request C (75t)  | XXXXX |                                     |
+|  +------------------+-------+                                     |
+|                              ^                                    |
+|                          batch boundary                           |
+|                              |                                    |
+|  +------------------+                                             |
+|  | Request D starts | <- must wait for entire batch to finish     |
+|  +------------------+                                             |
+|                                                                   |
+|  Continuous Batching:                                             |
+|  +------------------+                                             |
+|  | Request A (100t) |                                             |
+|  +------------------+--------+                                    |
+|  | Request B (50t) | Req D.. | <- D joins immediately when B ends |
+|  +--------------+--+---------+---+                                |
+|  | Request C (75t) |  Req E....  | <- E joins when C ends         |
+|  +------------------+------------+                                |
+|                                                                   |
+|  No wasted padding, no waiting at boundaries                      |
+|  Result: 2-24x higher throughput                                  |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+### 12.7 Distributed Checkpointing: Saving Terabytes in Seconds
+
+Training a 70B model produces over 1TB of state that must be checkpointed: 280GB of model weights, 280GB of optimizer momentum, 280GB of optimizer variance, plus gradients and random states. With training runs lasting months and costing millions of dollars, losing progress to a hardware failure is unacceptable.
+
+The naive approach - gather all state to rank 0 and write to disk - doesn't scale. Gathering 1TB to a single node overwhelms memory, and writing serially takes hours. Modern distributed checkpointing solves this by having each GPU write its shard directly to a parallel filesystem.
+
+With FSDP (Fully Sharded Data Parallelism) or DeepSpeed ZeRO-3, each GPU holds only 1/N of the model state for N GPUs. A 70B model across 1024 GPUs means ~1GB per GPU. Each GPU writes its shard independently to a different file, achieving aggregate write bandwidth of hundreds of GB/s across the parallel filesystem.
+
+PyTorch's Distributed Checkpoint (DCP) format stores each tensor in a separate file with metadata describing the global tensor shapes and how they're partitioned. This enables "resharding" - loading a checkpoint saved with 1024 GPUs onto 512 GPUs, or vice versa. The loader reads the metadata, determines which portions of each tensor it needs, and loads only those portions.
+
+Async checkpointing overlaps saving with training. The trainer initiates a checkpoint, continues to the next training iteration, and the I/O completes in the background. This hides checkpoint latency entirely for typical configurations.
+
+```
++------------------------------------------------------------------+
+|                 CHECKPOINT ANATOMY (70B Model)                    |
++------------------------------------------------------------------+
+|                                                                   |
+|  Component              | Size (FP32)  | Size (BF16)              |
+|  -----------------------+--------------+-------------             |
+|  Model weights          |    280 GB    |    140 GB                |
+|  Optimizer momentum (m) |    280 GB    |    280 GB                |
+|  Optimizer variance (v) |    280 GB    |    280 GB                |
+|  Gradients (optional)   |    280 GB    |    140 GB                |
+|  RNG states             |     ~1 GB    |     ~1 GB                |
+|  -----------------------+--------------+-------------             |
+|  TOTAL                  |  ~1.12 TB    |   ~841 GB                |
+|                                                                   |
++------------------------------------------------------------------+
+|                                                                   |
+|  FILESYSTEM PERFORMANCE FOR 1TB CHECKPOINT:                       |
+|                                                                   |
+|  Filesystem        | Write BW   | Time to Save                    |
+|  ------------------+------------+---------------                  |
+|  Local NVMe SSD    | 7 GB/s     | 2.4 minutes                     |
+|  Lustre (parallel) | 100+ GB/s  | 10 seconds                      |
+|  GPFS/Spectrum     | 80+ GB/s   | 12 seconds                      |
+|  WekaFS            | 150+ GB/s  | 7 seconds                       |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+### 12.8 Mixture of Experts: Trillion Parameters, Fraction of Compute
+
+Mixture of Experts (MoE) architectures enable trillion-parameter models with the compute cost of much smaller dense models. GPT-4, Mixtral, and Grok all use MoE.
+
+The concept is simple: instead of one large feed-forward network in each transformer layer, have N "expert" networks (typically 8-64). A learned "router" network examines each token and selects the top-K experts (usually K=1 or K=2) to process that token. Different tokens activate different experts.
+
+For a model with 8 experts and top-2 routing, each token uses only 2/8 = 25% of the expert parameters. A 1.8 trillion parameter MoE model with 8 experts uses roughly the same compute per token as a 225B dense model, but has access to much more total knowledge stored in the inactive experts.
+
+The routing decision is learned end-to-end with the model. During training, gradients flow through the router, teaching it which experts are best suited for different types of content. In practice, experts tend to specialize - some handle code, others handle different languages, others handle reasoning patterns.
+
+Load balancing is critical. If the router always selects the same expert, the other experts never learn and GPU utilization becomes uneven. MoE training includes auxiliary losses that encourage balanced expert usage. Token dropping (discarding tokens routed to overloaded experts) and expert capacity limits ensure even distribution.
+
+```
++------------------------------------------------------------------+
+|                    MIXTURE OF EXPERTS LAYER                       |
++------------------------------------------------------------------+
+|                                                                   |
+|  Input Token Embedding                                            |
+|          |                                                        |
+|          v                                                        |
+|    +----------+                                                   |
+|    |  Router  |  (small MLP: hidden_size -> num_experts)          |
+|    +----------+                                                   |
+|          |                                                        |
+|          v                                                        |
+|    [0.1, 0.05, 0.7, 0.02, 0.08, 0.02, 0.02, 0.01]  <- softmax     |
+|                    ^                                              |
+|              Expert 2 wins (0.7)                                  |
+|                    |                                              |
+|          +---------+---------+                                    |
+|          |         |         |                                    |
+|          v         v         v                                    |
+|     +--------+ +--------+ +--------+                              |
+|     |Expert 0| |Expert 2| |Expert 7|   (8 total experts)          |
+|     | (idle) | |(active)| | (idle) |                              |
+|     +--------+ +--------+ +--------+                              |
+|                    |                                              |
+|                    v                                              |
+|              Output Token                                         |
+|                                                                   |
+|  Result: 8x parameters, ~1x compute per token                     |
+|                                                                   |
++------------------------------------------------------------------+
+|                                                                   |
+|  REAL-WORLD MOE CONFIGURATIONS:                                   |
+|                                                                   |
+|  Model       | Total Params | Experts | Top-K | Active Params     |
+|  ------------+--------------+---------+-------+--------------     |
+|  Mixtral 8x7B|    47B       |    8    |   2   |    13B            |
+|  GPT-4 (est) |   1.8T       |   16    |   2   |   ~220B           |
+|  Grok-1      |   314B       |    8    |   2   |    ~86B           |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+### 12.9 KV Cache Memory Economics
+
+Understanding KV cache memory requirements is essential for capacity planning. The formula is: KV_size = 2 × num_layers × num_kv_heads × head_dim × seq_len × bytes_per_value.
+
+For LLaMA 70B: 2 × 80 layers × 8 KV heads (GQA) × 128 dim × 4096 tokens × 2 bytes (FP16) = 2.6GB per request. With 80GB HBM and 50GB for model weights, you have 30GB for KV cache, supporting ~11 concurrent requests at 4K context.
+
+Grouped Query Attention (GQA) significantly reduces this. Instead of separate key-value heads for each attention head (64 heads = 64 KV heads), GQA shares KV heads across groups. LLaMA 70B uses 8 KV heads shared across 64 attention heads, an 8x reduction in KV cache size compared to standard multi-head attention.
+
+Context length has dramatic impact. Doubling context from 4K to 8K doubles KV cache per request and halves maximum concurrency. This is why H200 with 141GB HBM (vs H100's 80GB) is so valuable for inference - more memory means more concurrent long-context requests.
+
+```
++------------------------------------------------------------------+
+|                 KV CACHE SIZING EXAMPLES                          |
++------------------------------------------------------------------+
+|                                                                   |
+|  Model        | Layers | KV Heads | Head Dim | Per-Token KV       |
+|  -------------+--------+----------+----------+--------------      |
+|  LLaMA 7B     |   32   |    32    |   128    |    512 KB          |
+|  LLaMA 70B    |   80   |     8    |   128    |    640 KB          |
+|  GPT-4 (est)  |  120   |    16    |   128    |   1.2 MB           |
+|                                                                   |
+|  AT 4K CONTEXT:                                                   |
+|  LLaMA 70B: 640 KB x 4096 = 2.6 GB per request                    |
+|                                                                   |
+|  GPU Memory Budget (H100 80GB):                                   |
+|  - Model weights:    50 GB                                        |
+|  - CUDA overhead:     5 GB                                        |
+|  - KV Cache:         25 GB (available)                            |
+|  - Max concurrent:   25 GB / 2.6 GB = ~9 requests at 4K context   |
+|                                                                   |
+|  With H200 (141GB):                                               |
+|  - KV Cache:         86 GB (available)                            |
+|  - Max concurrent:   86 GB / 2.6 GB = ~33 requests at 4K context  |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+### 12.10 The Prefill-Decode Dichotomy
+
+Inference has two distinct phases with opposite computational characteristics.
+
+**Prefill** (processing the input prompt) is compute-bound. All input tokens are processed in parallel through matrix multiplications. GPU Tensor Cores are fully utilized. Latency scales sub-linearly with prompt length due to parallelization. A 4K token prompt might take 200ms.
+
+**Decode** (generating output tokens) is memory-bandwidth-bound. Each iteration generates exactly one new token, requiring full model weights to be read from HBM for a tiny amount of computation. Tensor Cores are idle most of the time waiting for memory. Latency is roughly constant per token regardless of context length - about 20-50ms per token for large models.
+
+This dichotomy explains why H200's increased memory bandwidth (4.8 TB/s vs H100's 3.35 TB/s) matters more than its compute capability for inference. Decode is waiting on memory, not compute.
+
+Chunked prefill splits long prompts into chunks, interleaving with decode operations. This improves latency for decode requests that would otherwise wait behind a long prefill. GKE's Inference Gateway and vLLM both implement this.
+
+Disaggregated prefill-decode takes this further: dedicate some GPUs to prefill-only and others to decode-only. Prefill GPUs are configured for maximum throughput (large batches, high utilization). Decode GPUs are configured for minimum latency. The KV cache is transferred between them. This is an emerging architecture pattern for large-scale deployments.
+
+```
++------------------------------------------------------------------+
+|              PREFILL VS DECODE CHARACTERISTICS                    |
++------------------------------------------------------------------+
+|                                                                   |
+|  Characteristic      |    Prefill        |     Decode             |
+|  --------------------+-------------------+------------------      |
+|  Tokens per forward  | Hundreds/thousands|     Exactly 1          |
+|  Bottleneck          | Compute (TFLOPS)  |  Memory BW (TB/s)      |
+|  Tensor Core usage   |     High (~80%)   |     Low (~10%)         |
+|  Scaling             | Sub-linear w/len  |  Constant per token    |
+|  Batching benefit    |     Moderate      |      Huge              |
+|                                                                   |
+|  Example (70B model, H100):                                       |
+|  - Prefill 4K tokens:  200ms (50 TFLOPS utilized)                 |
+|  - Decode 1 token:      30ms (memory bound)                       |
+|  - Decode 500 tokens: 15 seconds                                  |
+|                                                                   |
+|  Optimization Focus:                                              |
+|  - Prefill: Maximize batch size, FlashAttention                   |
+|  - Decode: Maximize memory bandwidth, batching, speculation       |
+|                                                                   |
++------------------------------------------------------------------+
+```
+
+---
+
 ## Appendix A: Glossary
 
 | Term | Definition |
