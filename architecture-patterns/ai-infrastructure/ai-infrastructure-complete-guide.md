@@ -230,7 +230,7 @@ Artificial Intelligence (AI) refers to computer systems designed to perform task
 │              (REST APIs, WebSockets, Streaming)                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                      INFERENCE ENGINE                           │
-│            (vLLM, TensorRT-LLM, Triton Server)                 │
+│            (vLLM, TensorRT-LLM, Triton Server)                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                      MODEL WEIGHTS                              │
 │         (Transformer parameters stored in GPU memory)           │
@@ -239,7 +239,7 @@ Artificial Intelligence (AI) refers to computer systems designed to perform task
 │              (NVIDIA H100/B200, Google TPUs)                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                  NETWORKING FABRIC                              │
-│           (InfiniBand, NVLink, RoCE, Spectrum-X)               │
+│           (InfiniBand, NVLink, RoCE, Spectrum-X)                │
 ├─────────────────────────────────────────────────────────────────┤
 │                    DATA CENTER                                  │
 │        (Power, Cooling, Physical Infrastructure)                │
@@ -292,9 +292,9 @@ Training is the process of finding optimal parameter values:
 │  2. LOSS CALCULATION                                        │
 │     Loss = difference(Prediction, Actual)                   │
 │                                                             │
-│  3. BACKWARD PASS (Backpropagation)                        │
-│     Calculate gradient of loss w.r.t. each weight          │
-│     Using chain rule: ∂L/∂w = ∂L/∂y × ∂y/∂w               │
+│  3. BACKWARD PASS (Backpropagation)                         │
+│     Calculate gradient of loss w.r.t. each weight           │
+│     Using chain rule: ∂L/∂w = ∂L/∂y × ∂y/∂w                 │
 │                                                             │
 │  4. WEIGHT UPDATE (Gradient Descent)                        │
 │     new_weight = old_weight - (learning_rate × gradient)    │
@@ -321,22 +321,22 @@ The Transformer architecture, introduced by Vaswani et al. in 2017, revolutioniz
 │                  TRANSFORMER BLOCK (×N)                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              MULTI-HEAD ATTENTION                    │   │
-│  │                                                      │   │
-│  │   Q (Query)  ───┐                                    │   │
-│  │   K (Key)    ───┼──► Attention Scores ──► Output    │   │
-│  │   V (Value)  ───┘                                    │   │
-│  │                                                      │   │
-│  │   Attention(Q,K,V) = softmax(QK^T/√d) × V           │   │
-│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │              MULTI-HEAD ATTENTION                   │    │
+│  │                                                     │    │
+│  │   Q (Query)  ───┐                                   │    │
+│  │   K (Key)    ───┼──► Attention Scores ──► Output    │    │
+│  │   V (Value)  ───┘                                   │    │
+│  │                                                     │    │
+│  │   Attention(Q,K,V) = softmax(QK^T/√d) × V           │    │
+│  └─────────────────────────────────────────────────────┘    │
 │                          │                                  │
 │                    Add & Normalize                          │
 │                          │                                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              FEED-FORWARD NETWORK                    │   │
-│  │         Linear ──► GELU ──► Linear                   │   │
-│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │              FEED-FORWARD NETWORK                   │    │
+│  │         Linear ──► GELU ──► Linear                  │    │
+│  └─────────────────────────────────────────────────────┘    │
 │                          │                                  │
 │                    Add & Normalize                          │
 │                                                             │
@@ -381,17 +381,17 @@ Before processing, text must be converted to tokens:
 │     "Hello, how are you?"                                   │
 │              │                                              │
 │              ▼                                              │
-│  2. TOKENIZE (BPE/WordPiece)                               │
-│     ["Hello", ",", "how", "are", "you", "?"]               │
+│  2. TOKENIZE (BPE/WordPiece)                                │
+│     ["Hello", ",", "how", "are", "you", "?"]                │
 │              │                                              │
 │              ▼                                              │
 │  3. TOKEN IDs                                               │
-│     [15496, 11, 9257, 389, 345, 30]                        │
+│     [15496, 11, 9257, 389, 345, 30]                         │
 │              │                                              │
 │              ▼                                              │
 │  4. EMBEDDINGS (learned vectors)                            │
-│     [[0.23, -0.45, ...], [0.12, 0.89, ...], ...]          │
-│     Each token → 4096-12288 dimensional vector             │
+│     [[0.23, -0.45, ...], [0.12, 0.89, ...], ...]            │
+│     Each token → 4096-12288 dimensional vector              │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -412,15 +412,15 @@ Before processing, text must be converted to tokens:
 │                                                             │
 │  STAGE 1: PRE-TRAINING                                      │
 │  ════════════════════                                       │
-│  • Dataset: Trillions of tokens from internet, books, code │
+│  • Dataset: Trillions of tokens from internet, books, code  │
 │  • Objective: Predict next token                            │
 │  • Duration: Weeks to months                                │
-│  • Compute: 10,000-100,000+ GPUs                           │
+│  • Compute: 10,000-100,000+ GPUs                            │
 │  • Cost: $10M - $500M+                                      │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  STAGE 2: SUPERVISED FINE-TUNING (SFT)                     │
+│  STAGE 2: SUPERVISED FINE-TUNING (SFT)                      │
 │  ══════════════════════════════════════                     │
 │  • Dataset: High-quality instruction-response pairs         │
 │  • Objective: Learn to follow instructions                  │
@@ -429,10 +429,10 @@ Before processing, text must be converted to tokens:
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  STAGE 3: RLHF (Reinforcement Learning from Human Feedback)│
+│  STAGE 3: RLHF (Reinforcement Learning from Human Feedback) │
 │  ═══════════════════════════════════════════════════════════│
 │  • Train reward model from human preferences                │
-│  • Use PPO/DPO to optimize for preferred responses         │
+│  • Use PPO/DPO to optimize for preferred responses          │
 │  • Balance helpfulness vs harmlessness                      │
 │  • Duration: Weeks                                          │
 │                                                             │
@@ -455,31 +455,31 @@ Training modern LLMs requires distributing work across thousands of GPUs:
 │  • Gradients synchronized across GPUs                       │
 │  • Most common approach                                     │
 │                                                             │
-│  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐                        │
-│  │GPU 0│  │GPU 1│  │GPU 2│  │GPU 3│                        │
-│  │Model│  │Model│  │Model│  │Model│  ◄── Same model        │
-│  │Data1│  │Data2│  │Data3│  │Data4│  ◄── Different data    │
-│  └─────┘  └─────┘  └─────┘  └─────┘                        │
+│  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐                         │
+│  │GPU 0│  │GPU 1│  │GPU 2│  │GPU 3│                         │
+│  │Model│  │Model│  │Model│  │Model│  ◄── Same model         │
+│  │Data1│  │Data2│  │Data3│  │Data4│  ◄── Different data     │
+│  └─────┘  └─────┘  └─────┘  └─────┘                         │
 │      │       │        │        │                            │
-│      └───────┴────────┴────────┘                           │
+│      └───────┴────────┴────────┘                            │
 │              │                                              │
 │         Sync Gradients                                      │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  MODEL PARALLELISM (Tensor Parallelism)                    │
+│  MODEL PARALLELISM (Tensor Parallelism)                     │
 │  ──────────────────────────────────────                     │
 │  • Model split across GPUs                                  │
 │  • Each GPU holds part of each layer                        │
 │  • Required when model > single GPU memory                  │
 │                                                             │
-│  ┌─────────────────────────────────────┐                   │
-│  │            LAYER N                   │                   │
-│  │  ┌────┐ ┌────┐ ┌────┐ ┌────┐       │                   │
-│  │  │GPU0│ │GPU1│ │GPU2│ │GPU3│       │                   │
-│  │  │25% │ │25% │ │25% │ │25% │       │                   │
-│  │  └────┘ └────┘ └────┘ └────┘       │                   │
-│  └─────────────────────────────────────┘                   │
+│  ┌─────────────────────────────────────┐                    │
+│  │            LAYER N                  │                    │
+│  │  ┌────┐ ┌────┐ ┌────┐ ┌────┐        │                    │
+│  │  │GPU0│ │GPU1│ │GPU2│ │GPU3│        │                    │
+│  │  │25% │ │25% │ │25% │ │25% │        │                    │
+│  │  └────┘ └────┘ └────┘ └────┘        │                    │
+│  └─────────────────────────────────────┘                    │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
@@ -487,12 +487,12 @@ Training modern LLMs requires distributing work across thousands of GPUs:
 │  ────────────────────                                       │
 │  • Different layers on different GPUs                       │
 │  • Data flows through pipeline                              │
-│  • Micro-batching to reduce bubble overhead                │
+│  • Micro-batching to reduce bubble overhead                 │
 │                                                             │
-│  GPU 0: [Layer 1-10]  ──►                                  │
-│  GPU 1: [Layer 11-20] ──►                                  │
-│  GPU 2: [Layer 21-30] ──►                                  │
-│  GPU 3: [Layer 31-40] ──►                                  │
+│  GPU 0: [Layer 1-10]  ──►                                   │
+│  GPU 1: [Layer 11-20] ──►                                   │
+│  GPU 2: [Layer 21-30] ──►                                   │
+│  GPU 3: [Layer 31-40] ──►                                   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -519,37 +519,37 @@ Training modern LLMs requires distributing work across thousands of GPUs:
 │                  NVIDIA DATA CENTER GPUs                    │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  A100 (2020) - Ampere Architecture                         │
-│  ─────────────────────────────────                         │
-│  • Memory: 40GB / 80GB HBM2e                               │
+│  A100 (2020) - Ampere Architecture                          │
+│  ─────────────────────────────────                          │
+│  • Memory: 40GB / 80GB HBM2e                                │
 │  • Bandwidth: 2 TB/s                                        │
-│  • FP16: 312 TFLOPS                                        │
-│  • Use: Baseline for most training                         │
+│  • FP16: 312 TFLOPS                                         │
+│  • Use: Baseline for most training                          │
 │                                                             │
-│  H100 (2022) - Hopper Architecture                         │
-│  ─────────────────────────────────                         │
+│  H100 (2022) - Hopper Architecture                          │
+│  ─────────────────────────────────                          │
 │  • Memory: 80GB HBM3                                        │
 │  • Bandwidth: 3.35 TB/s                                     │
-│  • FP16: 1,979 TFLOPS                                      │
-│  • FP8: 3,958 TFLOPS (Transformer Engine)                  │
+│  • FP16: 1,979 TFLOPS                                       │
+│  • FP8: 3,958 TFLOPS (Transformer Engine)                   │
 │  • Use: Current production standard                         │
 │                                                             │
-│  H200 (2024) - Hopper Architecture (Memory Enhanced)       │
-│  ───────────────────────────────────────────────           │
-│  • Memory: 141GB HBM3e (+76% vs H100)                      │
-│  • Bandwidth: 4.8 TB/s (+43% vs H100)                      │
-│  • 2x inference speed for LLMs vs H100                     │
-│  • Use: Large context inference, KV cache heavy workloads  │
+│  H200 (2024) - Hopper Architecture (Memory Enhanced)        │
+│  ───────────────────────────────────────────────            │
+│  • Memory: 141GB HBM3e (+76% vs H100)                       │
+│  • Bandwidth: 4.8 TB/s (+43% vs H100)                       │
+│  • 2x inference speed for LLMs vs H100                      │
+│  • Use: Large context inference, KV cache heavy workloads   │
 │                                                             │
-│  B200 (2025) - Blackwell Architecture                      │
-│  ────────────────────────────────────                      │
+│  B200 (2025) - Blackwell Architecture                       │
+│  ────────────────────────────────────                       │
 │  • Memory: 192GB HBM3e                                      │
-│  • Bandwidth: 8 TB/s (2x H100)                             │
-│  • 208 billion transistors (dual-die)                      │
-│  • Training: 3x faster than H100                           │
-│  • Inference: 15x faster than H100                         │
+│  • Bandwidth: 8 TB/s (2x H100)                              │
+│  • 208 billion transistors (dual-die)                       │
+│  • Training: 3x faster than H100                            │
+│  • Inference: 15x faster than H100                          │
 │  • Native FP4 support                                       │
-│  • Use: Next-gen training and inference                    │
+│  • Use: Next-gen training and inference                     │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -576,28 +576,28 @@ Training modern LLMs requires distributing work across thousands of GPUs:
 │  TPU v4 (2021)                                              │
 │  • 275 TFLOPS (BF16)                                        │
 │  • 32GB HBM2e                                               │
-│  • Used for: PaLM, original Gemini                         │
+│  • Used for: PaLM, original Gemini                          │
 │                                                             │
 │  TPU v5p (2023)                                             │
 │  • 459 TFLOPS (BF16)                                        │
 │  • 95GB HBM2e                                               │
 │  • 2x training speed vs v4                                  │
-│  • Used for: Gemini 1.5                                    │
+│  • Used for: Gemini 1.5                                     │
 │                                                             │
-│  Trillium / TPU v6e (2024)                                 │
+│  Trillium / TPU v6e (2024)                                  │
 │  • 4.7x compute vs v5e                                      │
-│  • 2x memory and interconnect bandwidth                    │
-│  • Used for: Gemini 2.0                                    │
+│  • 2x memory and interconnect bandwidth                     │
+│  • Used for: Gemini 2.0                                     │
 │                                                             │
 │  Ironwood / TPU v7 (2025)                                   │
 │  • 4,614 TFLOPS peak                                        │
-│  • Configurations: 256-chip and 9,216-chip clusters        │
-│  • Used for: Gemini 3.0 and beyond                         │
+│  • Configurations: 256-chip and 9,216-chip clusters         │
+│  • Used for: Gemini 3.0 and beyond                          │
 │                                                             │
 │  TPU v8 (2025+)                                             │
-│  • First bifurcated design: TPU 8t (training), TPU 8i      │
-│  • TPU 8i: Optimized for inference with expanded SRAM      │
-│  • On-silicon KV cache hosting                             │
+│  • First bifurcated design: TPU 8t (training), TPU 8i       │
+│  • TPU 8i: Optimized for inference with expanded SRAM       │
+│  • On-silicon KV cache hosting                              │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -623,39 +623,39 @@ Anthropic runs one of the world's largest Trainium2 clusters for training Claude
 │              AI DATA CENTER NETWORK HIERARCHY               │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  INTRA-NODE (Within a Server)                              │
-│  ════════════════════════════                              │
-│  NVLink: 1.8 TB/s bidirectional per GPU                    │
-│  • Connects up to 8 GPUs within single server              │
-│  • 14x bandwidth of PCIe Gen 5                             │
-│  • Fifth generation supports 72 GPUs per rack              │
+│  INTRA-NODE (Within a Server)                               │
+│  ════════════════════════════                               │
+│  NVLink: 1.8 TB/s bidirectional per GPU                     │
+│  • Connects up to 8 GPUs within single server               │
+│  • 14x bandwidth of PCIe Gen 5                              │
+│  • Fifth generation supports 72 GPUs per rack               │
 │                                                             │
-│     ┌─────┐  NVLink   ┌─────┐                              │
-│     │GPU 0│◄─────────►│GPU 1│                              │
-│     └─────┘  1.8TB/s  └─────┘                              │
+│     ┌─────┐  NVLink   ┌─────┐                               │
+│     │GPU 0│◄─────────►│GPU 1│                               │
+│     └─────┘  1.8TB/s  └─────┘                               │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  INTER-NODE (Between Servers)                              │
-│  ════════════════════════════                              │
+│  INTER-NODE (Between Servers)                               │
+│  ════════════════════════════                               │
 │                                                             │
 │  Option 1: InfiniBand                                       │
-│  • 400-800 Gb/s per port                                   │
-│  • 1-2 microsecond latency                                 │
-│  • Best for: Tightly-coupled training                      │
-│  • Used by: xAI Colossus, Meta (partial)                   │
+│  • 400-800 Gb/s per port                                    │
+│  • 1-2 microsecond latency                                  │
+│  • Best for: Tightly-coupled training                       │
+│  • Used by: xAI Colossus, Meta (partial)                    │
 │                                                             │
-│  Option 2: RoCE (RDMA over Converged Ethernet)             │
-│  • 400-800 Gb/s                                            │
-│  • Slightly higher latency than IB                         │
-│  • More flexible, lower cost                               │
-│  • Used by: Meta, Microsoft, AWS, Google                   │
+│  Option 2: RoCE (RDMA over Converged Ethernet)              │
+│  • 400-800 Gb/s                                             │
+│  • Slightly higher latency than IB                          │
+│  • More flexible, lower cost                                │
+│  • Used by: Meta, Microsoft, AWS, Google                    │
 │                                                             │
-│  Option 3: Spectrum-X (NVIDIA)                             │
+│  Option 3: Spectrum-X (NVIDIA)                              │
 │  • 800 Gb/s Ethernet                                        │
-│  • 95% data throughput, zero packet loss                   │
-│  • AI-optimized congestion control                         │
-│  • Used by: xAI Colossus                                   │
+│  • 95% data throughput, zero packet loss                    │
+│  • AI-optimized congestion control                          │
+│  • Used by: xAI Colossus                                    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -665,16 +665,16 @@ Anthropic runs one of the world's largest Trainium2 clusters for training Claude
 ```
                            SPINE LAYER
             ┌───────────────────────────────────────┐
-            │   High-bandwidth switches (800G)       │
+            │   High-bandwidth switches (800G)      │
             └─────────┬─────────┬─────────┬─────────┘
                       │         │         │
             ┌─────────┴─────────┴─────────┴─────────┐
-            │              LEAF LAYER                │
-            └─────┬─────┬─────┬─────┬─────┬─────┬───┘
-                  │     │     │     │     │     │
-              ┌───┴───┐ │ ┌───┴───┐ │ ┌───┴───┐ │
-              │ Rack 1│ │ │ Rack 2│ │ │ Rack N│ │
-              │8x H100│ │ │8x H100│ │ │8x H100│ │
+            │              LEAF LAYER               │
+            └─────┬─────┬─────┬─────┬─────┬─────────┘
+                  │     │     │     │     │     
+              ┌───┴───┐ │ ┌───┴───┐ │ ┌───┴───┐ 
+              │ Rack 1│ │ │ Rack 2│ │ │ Rack N│ 
+              │8x H100│ │ │8x H100│ │ │8x H100│ 
               └───────┘   └───────┘   └───────┘
 ```
 
@@ -707,67 +707,67 @@ Anthropic runs one of the world's largest Trainium2 clusters for training Claude
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    COMPLETE REQUEST LIFECYCLE                            │
+│                    COMPLETE REQUEST LIFECYCLE                           │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  USER                                                                    │
-│    │                                                                     │
+│                                                                         │
+│  USER                                                                   │
+│    │                                                                    │
 │    │ 1. "Explain quantum computing"                                     │
-│    ▼                                                                     │
+│    ▼                                                                    │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │                        EDGE/CDN LAYER                             │   │
-│  │  • TLS termination                                                │   │
-│  │  • DDoS protection                                                │   │
-│  │  • Geographic routing                                             │   │
-│  │  • Rate limiting                                                  │   │
+│  │                        EDGE/CDN LAYER                            │   │
+│  │  • TLS termination                                               │   │
+│  │  • DDoS protection                                               │   │
+│  │  • Geographic routing                                            │   │
+│  │  • Rate limiting                                                 │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
-│    │                                                                     │
-│    │ 2. HTTPS request to api.openai.com / api.anthropic.com            │
-│    ▼                                                                     │
+│    │                                                                    │
+│    │ 2. HTTPS request to api.openai.com / api.anthropic.com             │
+│    ▼                                                                    │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │                       API GATEWAY                                  │   │
-│  │  • Authentication (API key validation)                            │   │
-│  │  • Authorization (quota, tier limits)                             │   │
-│  │  • Request validation                                             │   │
-│  │  • Billing/metering                                               │   │
+│  │                       API GATEWAY                                │   │
+│  │  • Authentication (API key validation)                           │   │
+│  │  • Authorization (quota, tier limits)                            │   │
+│  │  • Request validation                                            │   │
+│  │  • Billing/metering                                              │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
-│    │                                                                     │
+│    │                                                                    │
 │    │ 3. Authenticated request with metadata                             │
-│    ▼                                                                     │
+│    ▼                                                                    │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │                     LOAD BALANCER                                  │   │
-│  │  • Health checking                                                 │   │
-│  │  • Session affinity (for streaming)                               │   │
+│  │                     LOAD BALANCER                                │   │
+│  │  • Health checking                                               │   │
+│  │  • Session affinity (for streaming)                              │   │
 │  │  • Model-aware routing (GPT-4 vs GPT-3.5)                        │   │
-│  │  • KV-cache aware routing (advanced)                              │   │
+│  │  • KV-cache aware routing (advanced)                             │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
-│    │                                                                     │
+│    │                                                                    │
 │    │ 4. Route to optimal inference server                               │
-│    ▼                                                                     │
+│    ▼                                                                    │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │                   INFERENCE SERVER                                 │   │
+│  │                   INFERENCE SERVER                               │   │
 │  │  ┌────────────────────────────────────────────────────────────┐  │   │
-│  │  │                    TOKENIZER                                │  │   │
+│  │  │                    TOKENIZER                               │  │   │
 │  │  │  "Explain quantum computing" → [50268, 12345, 9876, ...]   │  │   │
 │  │  └────────────────────────────────────────────────────────────┘  │   │
-│  │                          │                                        │   │
-│  │                          ▼                                        │   │
+│  │                          │                                       │   │
+│  │                          ▼                                       │   │
 │  │  ┌────────────────────────────────────────────────────────────┐  │   │
-│  │  │                  EMBEDDING LOOKUP                           │  │   │
+│  │  │                  EMBEDDING LOOKUP                          │  │   │
 │  │  │  Token IDs → Dense vectors (4096-12288 dimensions)         │  │   │
 │  │  └────────────────────────────────────────────────────────────┘  │   │
-│  │                          │                                        │   │
-│  │                          ▼                                        │   │
+│  │                          │                                       │   │
+│  │                          ▼                                       │   │
 │  │  ┌────────────────────────────────────────────────────────────┐  │   │
-│  │  │                GPU INFERENCE ENGINE                         │  │   │
+│  │  │                GPU INFERENCE ENGINE                        │  │   │
 │  │  │  ┌──────────────────────────────────────────────────────┐  │  │   │
 │  │  │  │  PREFILL PHASE (Process input)                       │  │  │   │
 │  │  │  │  • All input tokens processed in parallel            │  │  │   │
 │  │  │  │  • KV cache populated                                │  │  │   │
 │  │  │  │  • GPU-bound (compute intensive)                     │  │  │   │
 │  │  │  └──────────────────────────────────────────────────────┘  │  │   │
-│  │  │                          │                                  │  │   │
-│  │  │                          ▼                                  │  │   │
+│  │  │                          │                                 │  │   │
+│  │  │                          ▼                                 │  │   │
 │  │  │  ┌──────────────────────────────────────────────────────┐  │  │   │
 │  │  │  │  DECODE PHASE (Generate output)                      │  │  │   │
 │  │  │  │  • One token generated at a time                     │  │  │   │
@@ -776,19 +776,19 @@ Anthropic runs one of the world's largest Trainium2 clusters for training Claude
 │  │  │  │  • Repeat until EOS or max_tokens                    │  │  │   │
 │  │  │  └──────────────────────────────────────────────────────┘  │  │   │
 │  │  └────────────────────────────────────────────────────────────┘  │   │
-│  │                          │                                        │   │
-│  │                          ▼                                        │   │
+│  │                          │                                       │   │
+│  │                          ▼                                       │   │
 │  │  ┌────────────────────────────────────────────────────────────┐  │   │
-│  │  │                    DETOKENIZER                              │  │   │
+│  │  │                    DETOKENIZER                             │  │   │
 │  │  │  [98765, 54321, ...] → "Quantum computing is..."           │  │   │
 │  │  └────────────────────────────────────────────────────────────┘  │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
-│    │                                                                     │
+│    │                                                                    │
 │    │ 5. Stream tokens back (Server-Sent Events)                         │
-│    ▼                                                                     │
-│  USER sees: "Quantum computing is a type of computation that..."         │
-│             (appearing word by word)                                     │
-│                                                                          │
+│    ▼                                                                    │
+│  USER sees: "Quantum computing is a type of computation that..."        │
+│             (appearing word by word)                                    │
+│                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -822,14 +822,14 @@ Anthropic runs one of the world's largest Trainium2 clusters for training Claude
 │  With KV Cache:                                             │
 │  ──────────────                                             │
 │  Token 1: Compute K,V → Store in cache                      │
-│  Token 2: Compute K,V → Store, attend to cached K,V        │
-│  Token 3: Compute K,V → Store, attend to cached K,V        │
+│  Token 2: Compute K,V → Store, attend to cached K,V         │
+│  Token 3: Compute K,V → Store, attend to cached K,V         │
 │  ...                                                        │
-│  Token N: Only compute new token, reuse cache  ◄── O(N)    │
+│  Token N: Only compute new token, reuse cache  ◄── O(N)     │
 │                                                             │
-│  Memory per request: 2 × layers × heads × dim × seq_len    │
+│  Memory per request: 2 × layers × heads × dim × seq_len     │
 │  Example (70B model, 4K context):                           │
-│    2 × 80 × 64 × 128 × 4096 × 2 bytes = 5.4 GB per request │
+│    2 × 80 × 64 × 128 × 4096 × 2 bytes = 5.4 GB per request  │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -858,38 +858,38 @@ Anthropic runs one of the world's largest Trainium2 clusters for training Claude
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  1. CONTINUOUS BATCHING                                     │
-│     • Don't wait for batch to fill                         │
-│     • Add new requests as slots free up                    │
-│     • 2-10x throughput vs static batching                  │
+│     • Don't wait for batch to fill                          │
+│     • Add new requests as slots free up                     │
+│     • 2-10x throughput vs static batching                   │
 │                                                             │
-│  2. PAGED ATTENTION (vLLM)                                 │
-│     • KV cache in non-contiguous memory blocks             │
-│     • Eliminates memory fragmentation                      │
-│     • Near-optimal memory utilization                      │
+│  2. PAGED ATTENTION (vLLM)                                  │
+│     • KV cache in non-contiguous memory blocks              │
+│     • Eliminates memory fragmentation                       │
+│     • Near-optimal memory utilization                       │
 │                                                             │
 │  3. QUANTIZATION                                            │
-│     ┌────────┬──────────┬───────────┬──────────────┐       │
-│     │ Format │ Mem Save │ Speed Up  │ Quality Loss │       │
-│     ├────────┼──────────┼───────────┼──────────────┤       │
-│     │ FP16   │ 2x       │ 2x        │ None         │       │
-│     │ FP8    │ 4x       │ 2-3x      │ <1%          │       │
-│     │ INT8   │ 4x       │ 2-3x      │ 1-3%         │       │
-│     │ INT4   │ 8x       │ 2-4x      │ 3-5%         │       │
-│     └────────┴──────────┴───────────┴──────────────┘       │
+│     ┌────────┬──────────┬───────────┬──────────────┐        │
+│     │ Format │ Mem Save │ Speed Up  │ Quality Loss │        │
+│     ├────────┼──────────┼───────────┼──────────────┤        │
+│     │ FP16   │ 2x       │ 2x        │ None         │        │
+│     │ FP8    │ 4x       │ 2-3x      │ <1%          │        │
+│     │ INT8   │ 4x       │ 2-3x      │ 1-3%         │        │
+│     │ INT4   │ 8x       │ 2-4x      │ 3-5%         │        │
+│     └────────┴──────────┴───────────┴──────────────┘        │
 │                                                             │
 │  4. SPECULATIVE DECODING                                    │
 │     • Small "draft" model generates candidates              │
-│     • Large model verifies in parallel                     │
-│     • 2-3x speedup for some workloads                      │
+│     • Large model verifies in parallel                      │
+│     • 2-3x speedup for some workloads                       │
 │                                                             │
 │  5. KV CACHE COMPRESSION                                    │
-│     • FP8 KV cache: 50% memory savings                     │
-│     • Enables 2x concurrent requests                       │
+│     • FP8 KV cache: 50% memory savings                      │
+│     • Enables 2x concurrent requests                        │
 │                                                             │
 │  6. FLASH ATTENTION                                         │
-│     • Fused attention kernels                              │
-│     • Reduced memory I/O                                   │
-│     • 2-4x faster attention computation                    │
+│     • Fused attention kernels                               │
+│     • Reduced memory I/O                                    │
+│     • 2-4x faster attention computation                     │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -954,29 +954,29 @@ spec:
 │                                                             │
 │  CLOUD PARTNERSHIP                                          │
 │  • Primary: Microsoft Azure (exclusive)                     │
-│  • Secondary: Oracle Cloud (Stargate project)              │
+│  • Secondary: Oracle Cloud (Stargate project)               │
 │                                                             │
 │  HARDWARE EVOLUTION                                         │
-│  • 2020-2022: Tens of thousands of V100s, A100s            │
-│  • 2024: First batch of H200 GPUs                          │
-│  • 2025: GB200 systems at Stargate (Abilene, Texas)        │
+│  • 2020-2022: Tens of thousands of V100s, A100s             │
+│  • 2024: First batch of H200 GPUs                           │
+│  • 2025: GB200 systems at Stargate (Abilene, Texas)         │
 │                                                             │
 │  ARCHITECTURAL INNOVATIONS                                  │
-│  • GPT-4: Mixture of Experts (MoE) ~1.8T parameters        │
+│  • GPT-4: Mixture of Experts (MoE) ~1.8T parameters         │
 │  • GPT-5: Smart router system                               │
-│    - Fast model for simple queries                         │
-│    - Deep reasoning model for complex problems             │
-│    - Real-time router based on complexity/intent           │
+│    - Fast model for simple queries                          │
+│    - Deep reasoning model for complex problems              │
+│    - Real-time router based on complexity/intent            │
 │                                                             │
 │  CONTAINER ORCHESTRATION                                    │
 │  • Kubernetes for model deployment                          │
-│  • Auto-scaling based on traffic                           │
+│  • Auto-scaling based on traffic                            │
 │                                                             │
 │  STARGATE PROJECT (2025+)                                   │
-│  • $500B investment over 4 years                           │
-│  • Massive datacenter buildout                             │
-│  • Oracle Cloud Infrastructure                             │
-│  • Target: AGI-scale compute                               │
+│  • $500B investment over 4 years                            │
+│  • Massive datacenter buildout                              │
+│  • Oracle Cloud Infrastructure                              │
+│  • Target: AGI-scale compute                                │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -989,35 +989,35 @@ spec:
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  MULTI-CLOUD STRATEGY                                       │
-│  • Amazon Web Services (primary, $4B investment)           │
-│  • Google Cloud (strategic investment)                     │
-│  • Fluidstack (custom datacenter partner)                  │
+│  • Amazon Web Services (primary, $4B investment)            │
+│  • Google Cloud (strategic investment)                      │
+│  • Fluidstack (custom datacenter partner)                   │
 │                                                             │
 │  COMPUTE RESOURCES                                          │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  AWS Trainium2 Cluster                                │ │
-│  │  • One of world's largest Trainium2 deployments       │ │
-│  │  • ~50% cost of equivalent H100 capacity              │ │
-│  │  • Primary Claude training workload                   │ │
-│  └───────────────────────────────────────────────────────┘ │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  SpaceX Colossus 1 Lease (2025)                       │ │
-│  │  • 220,000 NVIDIA H100/H200 GPUs                      │ │
-│  │  • Location: Memphis, Tennessee                       │ │
-│  │  • Upgrading to Blackwell GB200                       │ │
-│  │  • Purpose: Address rate limit complaints             │ │
-│  └───────────────────────────────────────────────────────┘ │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  AWS Trainium2 Cluster                                │  │
+│  │  • One of world's largest Trainium2 deployments       │  │
+│  │  • ~50% cost of equivalent H100 capacity              │  │
+│  │  • Primary Claude training workload                   │  │
+│  └───────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  SpaceX Colossus 1 Lease (2025)                       │  │
+│  │  • 220,000 NVIDIA H100/H200 GPUs                      │  │
+│  │  • Location: Memphis, Tennessee                       │  │
+│  │  • Upgrading to Blackwell GB200                       │  │
+│  │  • Purpose: Address rate limit complaints             │  │
+│  └───────────────────────────────────────────────────────┘  │
 │                                                             │
-│  $50 BILLION INFRASTRUCTURE INITIATIVE (Nov 2025)          │
-│  • Custom datacenters in Texas and New York               │
-│  • Partnership with Fluidstack                            │
-│  • First sites live in 2026                               │
-│  • Multi-gigawatt scale capacity                          │
+│  $50 BILLION INFRASTRUCTURE INITIATIVE (Nov 2025)           │
+│  • Custom datacenters in Texas and New York                 │
+│  • Partnership with Fluidstack                              │
+│  • First sites live in 2026                                 │
+│  • Multi-gigawatt scale capacity                            │
 │                                                             │
 │  CLAUDE MODEL CHARACTERISTICS                               │
-│  • Constitutional AI training approach                     │
-│  • Focus on safety and helpfulness balance                │
-│  • Extensive red-teaming (153-page system card)           │
+│  • Constitutional AI training approach                      │
+│  • Focus on safety and helpfulness balance                  │
+│  • Extensive red-teaming (153-page system card)             │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1030,29 +1030,29 @@ spec:
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  CUSTOM SILICON: TPU ADVANTAGE                              │
-│  • Vertically integrated hardware + software               │
-│  • Purpose-built for transformer workloads                 │
-│  • Massive scale: Millions of TPU chips                    │
+│  • Vertically integrated hardware + software                │
+│  • Purpose-built for transformer workloads                  │
+│  • Massive scale: Millions of TPU chips                     │
 │                                                             │
-│  AI HYPERCOMPUTER ARCHITECTURE (2023+)                     │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  Hardware: TPU v5p, Trillium, Ironwood               │ │
-│  │  Network: Jupiter fabric with optical switches        │ │
-│  │  Software: XLA compiler, JAX, PyTorch/XLA            │ │
-│  │  Orchestration: Custom pod management                 │ │
-│  └───────────────────────────────────────────────────────┘ │
+│  AI HYPERCOMPUTER ARCHITECTURE (2023+)                      │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Hardware: TPU v5p, Trillium, Ironwood                │  │
+│  │  Network: Jupiter fabric with optical switches        │  │
+│  │  Software: XLA compiler, JAX, PyTorch/XLA             │  │
+│  │  Orchestration: Custom pod management                 │  │
+│  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  GEMINI MODEL VARIANTS                                      │
-│  • Gemini Ultra: Largest, most capable                     │
-│  • Gemini Pro: Balanced performance                        │
-│  • Gemini Flash: Speed + cost optimized                   │
-│    - Latency comparable to simple search queries          │
-│  • Gemini Nano: On-device (Android)                       │
+│  • Gemini Ultra: Largest, most capable                      │
+│  • Gemini Pro: Balanced performance                         │
+│  • Gemini Flash: Speed + cost optimized                     │
+│    - Latency comparable to simple search queries            │
+│  • Gemini Nano: On-device (Android)                         │
 │                                                             │
 │  SCALE BENCHMARKS                                           │
-│  • Powers: Search, Photos, Maps (1B+ users each)          │
-│  • Inference: Billions of queries per day                 │
-│  • Training: Multi-month runs on thousands of TPUs        │
+│  • Powers: Search, Photos, Maps (1B+ users each)            │
+│  • Inference: Billions of queries per day                   │
+│  • Training: Multi-month runs on thousands of TPUs          │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1064,32 +1064,32 @@ spec:
 │                      xAI INFRASTRUCTURE                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  COLOSSUS SUPERCOMPUTER (Memphis, Tennessee)               │
-│  ══════════════════════════════════════════                │
-│  • 200,000+ NVIDIA H100/H200 GPUs                          │
-│  • Built in 122 days (typically takes years)               │
-│  • NVIDIA CEO called it "superhuman" achievement           │
+│  COLOSSUS SUPERCOMPUTER (Memphis, Tennessee)                │
+│  ══════════════════════════════════════════                 │
+│  • 200,000+ NVIDIA H100/H200 GPUs                           │
+│  • Built in 122 days (typically takes years)                │
+│  • NVIDIA CEO called it "superhuman" achievement            │
 │                                                             │
 │  NETWORKING                                                 │
-│  • NVIDIA Spectrum-X Ethernet                              │
+│  • NVIDIA Spectrum-X Ethernet                               │
 │  • 800 Gb/s switches                                        │
 │  • 95% data throughput                                      │
-│  • Zero packet loss during training                        │
+│  • Zero packet loss during training                         │
 │                                                             │
 │  POWER INFRASTRUCTURE                                       │
-│  • Current consumption: 250-300 MW                         │
-│  • 168 Tesla Megapacks for battery backup                  │
+│  • Current consumption: 250-300 MW                          │
+│  • 168 Tesla Megapacks for battery backup                   │
 │                                                             │
 │  GROK MODEL ARCHITECTURE                                    │
-│  • Mixture-of-Experts (MoE) Transformer                    │
-│  • Multi-trillion total parameters                         │
-│  • Only fraction active per inference pass                 │
+│  • Mixture-of-Experts (MoE) Transformer                     │
+│  • Multi-trillion total parameters                          │
+│  • Only fraction active per inference pass                  │
 │                                                             │
 │  EXPANSION PLANS                                            │
-│  • $20B+ Mississippi facility                              │
-│  • Target: 1 million GPUs by end of 2025                   │
-│  • Grok 3: 10x compute of Grok-2                          │
-│  • Grok 4/4 Heavy: Released July 2025                      │
+│  • $20B+ Mississippi facility                               │
+│  • Target: 1 million GPUs by end of 2025                    │
+│  • Grok 3: 10x compute of Grok-2                            │
+│  • Grok 4/4 Heavy: Released July 2025                       │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1101,34 +1101,34 @@ spec:
 │                     META AI INFRASTRUCTURE                  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  GPU CLUSTERS (Llama 3 Training)                           │
-│  • 2 × 24,576 H100 GPU clusters (49,152 total)            │
-│  • Target: 350,000 H100s by end of 2024                   │
-│  • Equivalent compute: ~600,000 H100s                      │
+│  GPU CLUSTERS (Llama 3 Training)                            │
+│  • 2 × 24,576 H100 GPU clusters (49,152 total)              │
+│  • Target: 350,000 H100s by end of 2024                     │
+│  • Equivalent compute: ~600,000 H100s                       │
 │                                                             │
 │  DUAL NETWORK ARCHITECTURE                                  │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  Cluster 1: RoCE Fabric                               │ │
-│  │  • Arista 7800 switches                               │ │
-│  │  • Wedge400 + Minipack2 OCP rack switches            │ │
-│  │  • 400 Gbps endpoints                                 │ │
-│  └───────────────────────────────────────────────────────┘ │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  Cluster 2: InfiniBand Fabric                         │ │
-│  │  • NVIDIA Quantum2 InfiniBand                         │ │
-│  │  • 400 Gbps endpoints                                 │ │
-│  │  • Lower latency for tightly-coupled workloads        │ │
-│  └───────────────────────────────────────────────────────┘ │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Cluster 1: RoCE Fabric                               │  │
+│  │  • Arista 7800 switches                               │  │
+│  │  • Wedge400 + Minipack2 OCP rack switches             │  │
+│  │  • 400 Gbps endpoints                                 │  │
+│  └───────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Cluster 2: InfiniBand Fabric                         │  │
+│  │  • NVIDIA Quantum2 InfiniBand                         │  │
+│  │  • 400 Gbps endpoints                                 │  │
+│  │  • Lower latency for tightly-coupled workloads        │  │
+│  └───────────────────────────────────────────────────────┘  │
 │                                                             │
-│  OPEN HARDWARE: GRAND TETON                                │
-│  • Meta's in-house GPU server platform                     │
-│  • Contributed to Open Compute Project (OCP)              │
-│  • Built on OpenRack standard                              │
+│  OPEN HARDWARE: GRAND TETON                                 │
+│  • Meta's in-house GPU server platform                      │
+│  • Contributed to Open Compute Project (OCP)                │
+│  • Built on OpenRack standard                               │
 │                                                             │
-│  LLAMA 4 TRAINING (2025)                                   │
-│  • Cluster: 100,000+ H100 GPUs                            │
-│  • Focus: Multimodal, longer context                      │
-│  • High-bandwidth memory + low-latency interconnects      │
+│  LLAMA 4 TRAINING (2025)                                    │
+│  • Cluster: 100,000+ H100 GPUs                              │
+│  • Focus: Multimodal, longer context                        │
+│  • High-bandwidth memory + low-latency interconnects        │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1156,31 +1156,31 @@ spec:
 │                                                             │
 │  STEP 1: COLLECT COMPARISON DATA                            │
 │  ─────────────────────────────────                          │
-│  Prompt: "How do I pick a lock?"                           │
+│  Prompt: "How do I pick a lock?"                            │
 │                                                             │
-│  Response A: "Here are the steps to pick a lock..."        │
-│  Response B: "I can't help with that as it could..."       │
+│  Response A: "Here are the steps to pick a lock..."         │
+│  Response B: "I can't help with that as it could..."        │
 │                                                             │
-│  Human labeler: B > A (B is preferred)                     │
+│  Human labeler: B > A (B is preferred)                      │
 │                                                             │
 │  STEP 2: TRAIN REWARD MODEL                                 │
 │  ──────────────────────────────                             │
 │  • Learn to predict human preferences                       │
-│  • Input: (prompt, response) → Output: scalar score        │
-│  • Higher score = more aligned with human values           │
+│  • Input: (prompt, response) → Output: scalar score         │
+│  • Higher score = more aligned with human values            │
 │                                                             │
-│  STEP 3: OPTIMIZE POLICY WITH PPO/DPO                      │
+│  STEP 3: OPTIMIZE POLICY WITH PPO/DPO                       │
 │  ────────────────────────────────────                       │
 │  • Generate responses from current policy                   │
 │  • Score with reward model                                  │
-│  • Update policy to maximize reward                        │
-│  • KL penalty to stay close to base model                  │
+│  • Update policy to maximize reward                         │
+│  • KL penalty to stay close to base model                   │
 │                                                             │
 │  CHALLENGE: HELPFULNESS vs HARMLESSNESS                     │
 │  ───────────────────────────────────────                    │
-│  • Too helpful → unsafe responses                          │
-│  • Too safe → useless "I can't help" responses            │
-│  • Safe RLHF: Separate reward + cost models               │
+│  • Too helpful → unsafe responses                           │
+│  • Too safe → useless "I can't help" responses              │
+│  • Safe RLHF: Separate reward + cost models                 │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1193,37 +1193,37 @@ spec:
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  BENCHMARK SUITES                                           │
-│  • HarmBench: 18 attack methods, standardized evaluation   │
-│  • BBQ: Social discrimination detection                    │
-│  • SimpleSafetyTest: Basic safety checks                   │
-│  • XSTest: Helpfulness/harmlessness balance               │
-│  • AnthropicRedTeam: Adversarial probing resilience        │
+│  • HarmBench: 18 attack methods, standardized evaluation    │
+│  • BBQ: Social discrimination detection                     │
+│  • SimpleSafetyTest: Basic safety checks                    │
+│  • XSTest: Helpfulness/harmlessness balance                 │
+│  • AnthropicRedTeam: Adversarial probing resilience         │
 │                                                             │
 │  RED TEAMING APPROACHES                                     │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  Single-Turn Attacks                                  │ │
-│  │  • Direct harmful requests                            │ │
-│  │  • Jailbreak prompts                                  │ │
-│  │  • Role-playing scenarios                             │ │
-│  │  → Models generally robust here                       │ │
-│  └───────────────────────────────────────────────────────┘ │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │  Multi-Turn Attacks (THE REAL CHALLENGE)              │ │
-│  │  • Distribute harmful intent across 5-20 turns        │ │
-│  │  • Build rapport, then exploit                        │ │
-│  │  • 75% failure rate with persistent attacks           │ │
-│  │  → Active area of research                            │ │
-│  └───────────────────────────────────────────────────────┘ │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Single-Turn Attacks                                  │  │
+│  │  • Direct harmful requests                            │  │
+│  │  • Jailbreak prompts                                  │  │
+│  │  • Role-playing scenarios                             │  │
+│  │  → Models generally robust here                       │  │
+│  └───────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Multi-Turn Attacks (THE REAL CHALLENGE)              │  │
+│  │  • Distribute harmful intent across 5-20 turns        │  │
+│  │  • Build rapport, then exploit                        │  │
+│  │  • 75% failure rate with persistent attacks           │  │
+│  │  → Active area of research                            │  │
+│  └───────────────────────────────────────────────────────┘  │
 │                                                             │
-│  OPENAI-ANTHROPIC JOINT EVALUATION (2025)                  │
-│  • First reciprocal safety testing between competitors     │
-│  • OpenAI tested: Claude Opus 4, Claude Sonnet 4          │
-│  • Anthropic tested: GPT-4o, GPT-4.1, o3, o4-mini        │
-│  • Finding: Multi-attempt RL attacks most effective       │
+│  OPENAI-ANTHROPIC JOINT EVALUATION (2025)                   │
+│  • First reciprocal safety testing between competitors      │
+│  • OpenAI tested: Claude Opus 4, Claude Sonnet 4            │
+│  • Anthropic tested: GPT-4o, GPT-4.1, o3, o4-mini           │
+│  • Finding: Multi-attempt RL attacks most effective         │
 │                                                             │
 │  DOCUMENTATION DEPTH                                        │
-│  • Anthropic Claude Opus 4.5 system card: 153 pages       │
-│  • OpenAI GPT-5 system card: 60 pages                     │
+│  • Anthropic Claude Opus 4.5 system card: 153 pages         │
+│  • OpenAI GPT-5 system card: 60 pages                       │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -1251,27 +1251,27 @@ spec:
 │                                                             │
 │  HARDWARE                                                   │
 │  • Optical interconnects replacing copper                   │
-│  • Chiplet architectures (multi-die GPUs)                  │
-│  • Custom inference chips (TPU 8i, Inferentia)             │
-│  • Liquid cooling becoming standard                        │
-│  • Power: 1MW+ per rack becoming common                    │
+│  • Chiplet architectures (multi-die GPUs)                   │
+│  • Custom inference chips (TPU 8i, Inferentia)              │
+│  • Liquid cooling becoming standard                         │
+│  • Power: 1MW+ per rack becoming common                     │
 │                                                             │
 │  NETWORKING                                                 │
-│  • 1.6 Tbps links on roadmap                               │
-│  • Optical switches in backbone                            │
-│  • AI-aware load balancing                                 │
+│  • 1.6 Tbps links on roadmap                                │
+│  • Optical switches in backbone                             │
+│  • AI-aware load balancing                                  │
 │                                                             │
 │  SOFTWARE                                                   │
-│  • Unified training/inference frameworks                   │
-│  • Better quantization (FP4, microscaling)                 │
-│  • Disaggregated KV cache                                  │
-│  • Speculative decoding improvements                       │
+│  • Unified training/inference frameworks                    │
+│  • Better quantization (FP4, microscaling)                  │
+│  • Disaggregated KV cache                                   │
+│  • Speculative decoding improvements                        │
 │                                                             │
 │  ARCHITECTURE                                               │
-│  • Mixture of Experts (MoE) becoming default               │
-│  • Hybrid reasoning models (fast + deep)                   │
-│  • Multi-modal native (not retrofitted)                    │
-│  • Longer context (1M+ tokens)                             │
+│  • Mixture of Experts (MoE) becoming default                │
+│  • Hybrid reasoning models (fast + deep)                    │
+│  • Multi-modal native (not retrofitted)                     │
+│  • Longer context (1M+ tokens)                              │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
